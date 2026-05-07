@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% block title %}Bosh panel | Coach{% endblock %}
+{% block content %}
+<section class="page-header">
+  <h2 class="section-title">Bosh panel</h2>
+  <p class="section-subtitle">Jamoa holati, so'nggi o'zgarishlar va asosiy ko'rsatkichlar shu yerda.</p>
+</section>
+<section class="stats-grid">
+  {% for item in stats %}
+  <article class="stat-card accent-{{ item.accent|default:'blue' }}">
+    <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+    <div class="stat-content">
+      <p>{{ item.title }}</p>
+      <strong>{{ item.metric_value }}</strong>
+      <div class="stat-meta-row">
+        <span>{{ item.change_text }}</span>
+        <span class="trend-pill trend-{{ item.trend_direction }}">
+          <i class="bi bi-arrow-{% if item.trend_direction == 'down' %}down{% else %}up{% endif %}"></i>
+          {{ item.trend_value }}
+        </span>
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+<section class="chart-grid two-columns">
+  <article class="panel-card chart-panel analytics-card performance-analytics-card">
+    <div class="analytics-card-glow"></div>
+    <div class="analytics-header">
+      <div>
+        <span class="analytics-context">{{ charts.performance_summary.context }}</span>
+        <h3>Jamoa samaradorligi</h3>
+        <p>O'yin nazorati, g'alabalar va umumiy intensity trendi.</p>
+      </div>
+      <span class="period-badge"><i class="bi bi-calendar2-week"></i> Oxirgi 6 oy</span>
+    </div>
+    <div class="analytics-kpi-row">
+      <div class="main-kpi">
+        <span>Umumiy samaradorlik</span>
+        <strong>{{ charts.performance_summary.kpi }}</strong>
+      </div>
+      <div class="trend-badge trend-{{ charts.performance_summary.trend_direction }}">
+        <i class="bi bi-arrow-up-right"></i>
+        {{ charts.performance_summary.trend }}
+      </div>
+      <div class="micro-insight">
+        <span>Eng yaxshi oy</span>
+        <strong>{{ charts.performance_summary.best_label }} · {{ charts.performance_summary.best_value }}</strong>
+      </div>
+    </div>
+    {% if charts.has_performance_data %}
+    <div class="premium-chart-stage">
+      <div class="chart-stage-topline">
+        <div class="chip-legend">
+          <span><i class="legend-dot legend-blue"></i>Umumiy samaradorlik %</span>
+          <span><i class="legend-dot legend-cyan"></i>G'alabalar</span>
+        </div>
+        <span class="live-indicator"><i></i> Live model</span>
+      </div>
+      <div class="chart-canvas-wrap premium-chart-canvas">
+        <canvas id="performanceChart" aria-label="Jamoa samaradorligi grafigi"></canvas>
+      </div>
+    </div>
+    <div class="analytics-insights">
+      <div><span>Peak performance</span><strong>{{ charts.performance_summary.best_label }} · {{ charts.performance_summary.best_value }}</strong></div>
+      <div><span>Past nuqta</span><strong>{{ charts.performance_summary.low_label }} · {{ charts.performance_summary.low_value }}</strong></div>
+      <div><span>Barqarorlik</span><strong>{{ charts.performance_summary.stability }}</strong></div>
+    </div>
+    {% else %}
+    <div class="chart-empty-state">
+      <i class="bi bi-activity"></i>
+      <strong>Hozircha ma'lumot yo'q</strong>
+      <span>Samaradorlik bo'yicha ma'lumotlar kiritilgach grafik shu yerda chiqadi.</span>
+    </div>
+    {% endif %}
+  </article>
+  <article class="panel-card chart-panel analytics-card goals-analytics-card">
+    <div class="analytics-card-glow"></div>
+    <div class="analytics-header">
+      <div>
+        <span class="analytics-context">{{ charts.goals_summary.context }}</span>
+        <h3>Gol dinamikasi</h3>
+        <p>Hujum samarasi, pressingdan keyingi yakunlash va oyma-oy output.</p>
+      </div>
+      <span class="period-badge"><i class="bi bi-lightning-charge"></i> Hujum samarasi</span>
+    </div>
+    <div class="analytics-kpi-row">
+      <div class="main-kpi">
+        <span>Jami gollar</span>
+        <strong>{{ charts.goals_summary.kpi }}</strong>
+      </div>
+      <div class="trend-badge trend-{{ charts.goals_summary.trend_direction }}">
+        <i class="bi bi-arrow-up-right"></i>
+        {{ charts.goals_summary.trend }}
+      </div>
+      <div class="micro-insight">
+        <span>O'rtacha</span>
+        <strong>{{ charts.goals_summary.average }} gol/oy</strong>
+      </div>
+    </div>
+    {% if charts.has_goals_data %}
+    <div class="premium-chart-stage">
+      <div class="chart-stage-topline">
+        <div class="chip-legend">
+          <span><i class="legend-dot legend-cyan"></i>Gollar</span>
+          <span><i class="legend-dot legend-green"></i>O'rtacha: {{ charts.goals_summary.average }}</span>
+        </div>
+        <span class="live-indicator"><i></i> Attack flow</span>
+      </div>
+      <div class="chart-canvas-wrap premium-chart-canvas">
+        <canvas id="goalsChart" aria-label="Gol dinamikasi grafigi"></canvas>
+      </div>
+    </div>
+    <div class="analytics-insights">
+      <div><span>Eng samarali oy</span><strong>{{ charts.goals_summary.best_label }} · {{ charts.goals_summary.best_value }} gol</strong></div>
+      <div><span>Eng past output</span><strong>{{ charts.goals_summary.low_label }} · {{ charts.goals_summary.low_value }} gol</strong></div>
+      <div><span>Barqarorlik</span><strong>{{ charts.goals_summary.stability }}</strong></div>
+    </div>
+    {% else %}
+    <div class="chart-empty-state">
+      <i class="bi bi-bar-chart-line"></i>
+      <strong>Hozircha ma'lumot yo'q</strong>
+      <span>Gol ko'rsatkichlari paydo bo'lgach shu yerda interaktiv grafik chiqadi.</span>
+    </div>
+    {% endif %}
+  </article>
+</section>
+{{ charts|json_script:"dashboard-charts-data" }}
+<section class="dashboard-grid command-center-grid">
+  <article class="panel-card dashboard-panel top-players-panel">
+    <div class="panel-head dashboard-panel-head">
+      <div class="panel-title-group">
+        <span class="panel-icon panel-icon-gold"><i class="bi bi-trophy-fill"></i></span>
+        <div>
+          <h3>Top futbolchilar</h3>
+          <p>Forma va natijadorlik reytingi</p>
+        </div>
+      </div>
+      <a class="panel-action-link" href="{% url 'player_list' %}">Barchasi <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="table-shell dashboard-table-shell">
+      <table class="top-players-table">
+        <thead><tr><th>Futbolchi</th><th>Pozitsiya</th><th>O'yin</th><th>Gol</th></tr></thead>
+        <tbody>
+          {% for player in players %}
+          <tr>
+            <td>
+              <a class="top-player-link" href="{{ player.get_absolute_url }}">
+                <span class="rank-badge rank-{{ forloop.counter }}">{{ forloop.counter }}</span>
+                <span class="player-mini-avatar">
+                  {% if player.photo %}
+                  <img src="{{ player.photo_display_url }}" alt="{{ player.full_name }}">
+                  {% else %}
+                  {{ player.initials }}
+                  {% endif %}
+                </span>
+                <span class="top-player-copy">
+                  <strong>{{ player.full_name }}</strong>
+                  <small>#{{ player.shirt_number }} futbolchi</small>
+                </span>
+              </a>
+            </td>
+            <td><span class="badge {{ player.position }}">{{ player.get_position_display }}</span></td>
+            {% with st=player.dashboard_stat %}
+            <td class="metric-cell">{% if st %}{{ st.matches_played }}{% else %}0{% endif %}</td>
+            <td class="metric-cell goal-cell">{% if st %}{{ st.goals }}{% else %}0{% endif %}</td>
+            {% endwith %}
+          </tr>
+          {% empty %}
+          <tr><td colspan="4">Ma'lumot topilmadi.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article class="panel-card dashboard-panel">
+    <div class="panel-head dashboard-panel-head">
+      <div class="panel-title-group">
+        <span class="panel-icon panel-icon-blue"><i class="bi bi-calendar2-week"></i></span>
+        <div>
+          <h3>So'nggi o'yinlar</h3>
+          <p>Natijalar, joy va statuslar</p>
+        </div>
+      </div>
+      <a class="panel-action-link" href="{% url 'match_list' %}">Barchasi <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="stack-list dashboard-stack">
+      {% for match in recent_matches %}
+      <a class="list-card dashboard-match-card" href="{{ match.get_absolute_url }}">
+        <div class="match-mini-main">
+          <div class="match-mini-teams">
+            <span class="team-mini-logo blue">
+              {% if match.home_logo_url %}<img src="{{ match.home_logo_url }}" alt="{{ match.home_team }}">{% else %}{{ match.home_team|slice:':2'|upper }}{% endif %}
+            </span>
+            <strong>{{ match.home_team }} - {{ match.away_team }}</strong>
+          </div>
+          <span class="dashboard-meta-line"><i class="bi bi-calendar-event"></i>{{ match.match_date|date:'d.m.Y' }} | {{ match.match_time|time:'H:i' }}</span>
+          <span class="dashboard-meta-line"><i class="bi bi-geo-alt"></i>{{ match.stadium }}</span>
+        </div>
+        <div class="dashboard-card-side">
+          {% if match.status != 'upcoming' %}
+          <span class="score-mini">{{ match.home_score|default:'0' }} - {{ match.away_score|default:'0' }}</span>
+          {% endif %}
+          <span class="badge status-badge {{ match.status }}">{{ match.get_status_display }}</span>
+        </div>
+      </a>
+      {% empty %}
+      <p class="muted-text">O'yinlar hali kiritilmagan.</p>
+      {% endfor %}
+    </div>
+  </article>
+  <article class="panel-card dashboard-panel">
+    <div class="panel-head dashboard-panel-head">
+      <div class="panel-title-group">
+        <span class="panel-icon panel-icon-green"><i class="bi bi-activity"></i></span>
+        <div>
+          <h3>Yaqin mashg'ulotlar</h3>
+          <p>Reja, vaqt va blok turi</p>
+        </div>
+      </div>
+      <a class="panel-action-link" href="{% url 'training_list' %}">Barchasi <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="stack-list dashboard-stack">
+      {% for training in upcoming_trainings %}
+      <div class="list-card compact-card dashboard-training-card">
+        <div class="training-mini-main">
+          <span class="training-mini-icon {{ training.training_type }}">
+            {% if training.training_type == 'recovery' %}
+            <i class="bi bi-heart-pulse"></i>
+            {% elif training.training_type == 'tactics' %}
+            <i class="bi bi-diagram-3"></i>
+            {% elif training.training_type == 'fitness' %}
+            <i class="bi bi-lightning-charge"></i>
+            {% else %}
+            <i class="bi bi-stars"></i>
+            {% endif %}
+          </span>
+          <div>
+            <strong>{{ training.title }}</strong>
+            <span class="dashboard-meta-line"><i class="bi bi-clock"></i>{{ training.training_date|date:'d.m.Y' }} | {{ training.start_time|time:'H:i' }}</span>
+          </div>
+        </div>
+        <span class="badge training-badge {{ training.training_type }}">{{ training.get_training_type_display }}</span>
+      </div>
+      {% empty %}
+      <p class="muted-text">Mashg'ulotlar hali kiritilmagan.</p>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+{% endblock %}

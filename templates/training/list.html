@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Mashg'ulotlar | CoachPro{% endblock %}
+{% block content %}
+<section class="page-header header-row"><div><h2 class="section-title">Mashg'ulotlar</h2><p class="section-subtitle">Jamoa mashg'ulotlari rejasi, qatnashuv va boshqaruv bo'limi.</p></div><a class="primary-btn" href="{% url 'training_add' %}"><i class="bi bi-plus-lg"></i>Mashg'ulot qo'shish</a></section>
+<form class="panel-card toolbar-card" method="get"><div class="toolbar-grid"><div class="search-box inline-search"><i class="bi bi-calendar-event"></i><input type="date" name="date" value="{{ selected_date }}"></div><div class="select-wrap"><i class="bi bi-funnel"></i><select name="type"><option value="">Barchasi</option>{% for value,label in type_choices %}<option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div><button class="primary-btn" type="submit">Filtrlash</button></div></form>
+<section class="stats-grid">
+  {% for label,value,subtext,accent in training_stats %}
+  <article class="stat-card accent-{{ accent }}"><div class="stat-icon"><i class="bi bi-activity"></i></div><div><p>{{ label }}</p><strong>{{ value }}</strong><span>{{ subtext }}</span></div></article>
+  {% endfor %}
+</section>
+<section class="card-grid training-grid">
+  {% for training in trainings %}
+  <article class="entity-card training-card">
+    <div class="card-head-row"><div><h3>{{ training.title }}</h3><span class="badge neutral">{{ training.get_training_type_display }}</span></div><div class="row-actions"><a href="{% url 'training_edit' training.pk %}"><i class="bi bi-pencil-square"></i></a><a href="{% url 'training_delete' training.pk %}"><i class="bi bi-trash3"></i></a></div></div>
+    <div class="info-pairs"><span><i class="bi bi-calendar-event"></i>{{ training.training_date }}</span><span><i class="bi bi-clock"></i>{{ training.start_time|time:'H:i' }} - {{ training.end_time|time:'H:i' }}</span><span><i class="bi bi-geo-alt"></i>{{ training.location }}</span><span><i class="bi bi-hourglass-split"></i>{{ training.duration_display }}</span></div>
+    <div class="attendance-block"><div class="progress-head"><span>Qatnashuv</span><strong>{{ training.attendance_display }}</strong></div><div class="progress-bar success"><span style="width:{{ training.attendance_percent }}%"></span></div></div>
+  </article>
+  {% empty %}
+  <div class="empty-state"><div class="empty-icon"><i class="bi bi-calendar-week"></i></div><h3>Mashg'ulot topilmadi</h3><p>Filter yoki sana bo'yicha ma'lumot topilmadi.</p></div>
+  {% endfor %}
+</section>
+<section class="panel-card"><div class="panel-head"><h3>O'tkazilgan mashg'ulotlar</h3></div><div class="table-shell"><table><thead><tr><th>Sana</th><th>Vaqt</th><th>Turi</th><th>Joy</th><th>Davomiylik</th><th>Qatnashuv</th></tr></thead><tbody>{% for training in completed_trainings %}<tr><td>{{ training.training_date }}</td><td>{{ training.start_time|time:'H:i' }} - {{ training.end_time|time:'H:i' }}</td><td>{{ training.get_training_type_display }}</td><td>{{ training.location }}</td><td>{{ training.duration_display }}</td><td>{{ training.attendance_display }}</td></tr>{% empty %}<tr><td colspan="6">Hozircha tugallangan mashg'ulotlar yo'q.</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

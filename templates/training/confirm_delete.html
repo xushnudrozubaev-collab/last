@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}Mashg'ulotni o'chirish | CoachPro{% endblock %}
+{% block content %}
+<section class="panel-card delete-card"><span class="section-eyebrow danger">O'chirish</span><h2 class="section-title">{{ object.title }} mashg'ulotini o'chirish</h2><p class="section-subtitle">Bu amal qaytarilmaydi. Davom etishni istasangiz, quyidagi tugmani bosing.</p><form method="post">{% csrf_token %}<div class="form-actions"><a class="primary-btn ghost-btn" href="{% url 'training_list' %}">Bekor qilish</a><button class="primary-btn danger-btn" type="submit">O'chirish</button></div></form></section>
+{% endblock %}

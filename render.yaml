@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: coach-platform
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    preDeployCommand: python manage.py migrate
+    initialDeployHook: python manage.py createsuperuser --noinput --username coachadmin --email coach@example.com
+    startCommand: gunicorn coach_platform.wsgi:application
+    healthCheckPath: /login/
+    autoDeployTrigger: commit
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://*.onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: coach-platform-db
+          property: connectionString
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
+
+databases:
+  - name: coach-platform-db
+    plan: free

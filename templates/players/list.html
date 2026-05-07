@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Futbolchilar | CoachPro{% endblock %}
+{% block content %}
+<section class="page-header">
+  <h2 class="section-title">Jamoa tarkibi</h2>
+  <p class="section-subtitle">Futbolchilar ro'yxati, qidiruv va card ko'rinishidagi profil nazorati.</p>
+</section>
+<form class="panel-card toolbar-card" method="get">
+  <div class="toolbar-grid">
+    <div class="search-box inline-search"><i class="bi bi-search"></i><input type="text" name="q" value="{{ search_query }}" placeholder="Futbolchi qidirish..."></div>
+    <div class="select-wrap"><i class="bi bi-funnel"></i><select name="position"><option value="">Barcha pozitsiyalar</option>{% for value,label in position_choices %}<option value="{{ value }}" {% if selected_position == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="toolbar-actions"><button class="primary-btn" type="submit"><i class="bi bi-funnel-fill"></i>Filtrlash</button><a class="primary-btn ghost-btn" href="{% url 'player_add' %}"><i class="bi bi-plus-lg"></i>Futbolchi qo'shish</a></div>
+  </div>
+</form>
+<p class="result-text"><strong>{{ players|length }}</strong> futbolchi topildi</p>
+<section class="card-grid players-grid">
+  {% for player in players %}
+  {% with stat=player.statistics.first %}
+  <article class="entity-card player-card {% if stat and stat.rating >= 8.5 %}player-card-featured{% endif %}">
+    <div class="player-card-top">
+      <span class="player-number">#{{ player.shirt_number }}</span>
+      <div class="player-card-top-actions">
+        {% if stat and stat.rating >= 8.5 %}
+        <span class="player-form-badge"><i class="bi bi-stars"></i>Top form</span>
+        {% endif %}
+        <a class="player-action-btn player-edit-btn" href="{% url 'player_edit' player.pk %}" aria-label="{{ player.full_name }} ma'lumotlarini tahrirlash"><i class="bi bi-pencil-square"></i></a>
+        <a class="player-action-btn player-delete-btn" href="{% url 'player_delete' player.pk %}" aria-label="{{ player.full_name }} futbolchisini o'chirish"><i class="bi bi-trash3"></i></a>
+      </div>
+    </div>
+    <a class="player-card-main" href="{{ player.get_absolute_url }}" aria-label="{{ player.full_name }} profilini ko'rish">
+    <div class="avatar-circle">
+      {% if player.photo %}
+      <img src="{{ player.photo_display_url }}" alt="{{ player.full_name }}">
+      {% else %}
+      <svg class="avatar-svg" viewBox="0 0 120 120" aria-hidden="true">
+        <defs>
+          <linearGradient id="playerGradient{{ player.pk }}" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1d8fc7"></stop>
+            <stop offset="100%" stop-color="#0ea5d9"></stop>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r="60" fill="url(#playerGradient{{ player.pk }})"></circle>
+        <text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle">{{ player.initials }}</text>
+      </svg>
+      {% endif %}
+    </div>
+    <div class="player-card-header">
+      <h3>{{ player.full_name }}</h3>
+      <div class="player-meta-line">
+        <span class="badge {{ player.position }}">{{ player.get_position_display }}</span>
+        <span class="player-age-inline">{{ player.age }} yosh</span>
+      </div>
+    </div>
+    <div class="mini-stats three-col">
+      <div class="mini-stat-block mini-stat-goals"><i class="bi bi-bullseye"></i><strong>{% if stat %}{{ stat.goals }}{% else %}0{% endif %}</strong><span>Gol</span></div>
+      <div class="mini-stat-block mini-stat-assists"><i class="bi bi-bezier2"></i><strong>{% if stat %}{{ stat.assists }}{% else %}0{% endif %}</strong><span>Golli uzatma</span></div>
+      <div class="mini-stat-block mini-stat-matches"><i class="bi bi-trophy"></i><strong>{% if stat %}{{ stat.matches_played }}{% else %}0{% endif %}</strong><span>O'yin</span></div>
+    </div>
+    </a>
+  </article>
+  {% endwith %}
+  {% empty %}
+  <div class="empty-state"><div class="empty-icon"><i class="bi bi-search"></i></div><h3>Futbolchi topilmadi</h3><p>Qidiruv yoki filtrni o'zgartiring.</p></div>
+  {% endfor %}
+</section>
+{% endblock %}

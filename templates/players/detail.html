@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}{{ player.full_name }} | CoachPro{% endblock %}
+{% block content %}
+<a class="back-link" href="{% url 'player_list' %}"><i class="bi bi-arrow-left"></i>Orqaga qaytish</a>
+<section class="panel-card detail-hero">
+  <div class="detail-avatar">
+    {% if player.photo %}
+    <img src="{{ player.photo_display_url }}" alt="{{ player.full_name }}">
+    {% else %}
+    <svg class="avatar-svg" viewBox="0 0 120 120" aria-hidden="true">
+      <defs>
+        <linearGradient id="playerDetailGradient{{ player.pk }}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1d8fc7"></stop>
+          <stop offset="100%" stop-color="#0ea5d9"></stop>
+        </linearGradient>
+      </defs>
+      <circle cx="60" cy="60" r="60" fill="url(#playerDetailGradient{{ player.pk }})"></circle>
+      <text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle">{{ player.initials }}</text>
+    </svg>
+    {% endif %}
+  </div>
+  <div class="detail-info">
+    <h1>{{ player.full_name }}</h1>
+    <div class="detail-tags"><span class="badge {{ player.position }}">{{ player.get_position_display }}</span><span class="muted-inline">#{{ player.shirt_number }}</span></div>
+    <div class="detail-meta-grid">
+      <div><span>Yosh</span><strong>{{ player.age }}</strong></div>
+      <div><span>Millati</span><strong>{{ player.nationality }}</strong></div>
+      <div><span>Bo'yi</span><strong>{{ player.height }} m</strong></div>
+      <div><span>Og'irligi</span><strong>{{ player.weight }} kg</strong></div>
+    </div>
+  </div>
+  <div class="detail-actions">
+    <a class="primary-btn ghost-btn" href="{% url 'player_edit' player.pk %}"><i class="bi bi-pencil-square"></i>Tahrirlash</a>
+    <a class="primary-btn danger-btn" href="{% url 'player_delete' player.pk %}"><i class="bi bi-trash3"></i>O'chirish</a>
+  </div>
+</section>
+<section class="stats-grid detail-stats">
+  <article class="stat-card accent-blue"><div class="stat-icon"><i class="bi bi-bullseye"></i></div><div><p>Gollar</p><strong>{% if stat %}{{ stat.goals }}{% else %}0{% endif %}</strong><span>Joriy mavsum</span></div></article>
+  <article class="stat-card accent-cyan"><div class="stat-icon"><i class="bi bi-people"></i></div><div><p>Golli uzatmalar</p><strong>{% if stat %}{{ stat.assists }}{% else %}0{% endif %}</strong><span>Hujum hissasi</span></div></article>
+  <article class="stat-card accent-green"><div class="stat-icon"><i class="bi bi-trophy"></i></div><div><p>O'yinlar</p><strong>{% if stat %}{{ stat.matches_played }}{% else %}0{% endif %}</strong><span>Tarkibdagi o'rni</span></div></article>
+  <article class="stat-card accent-purple"><div class="stat-icon"><i class="bi bi-star-fill"></i></div><div><p>Reyting</p><strong>{% if stat %}{{ stat.rating }}{% else %}0.0{% endif %}</strong><span>Murabbiy bahosi</span></div></article>
+</section>
+<section class="chart-grid two-columns">
+  <article class="panel-card player-insight-panel">
+    <div class="panel-head insight-panel-head">
+      <div>
+        <h3>Karyera ma'lumotlari</h3>
+        <span>Tarkibdagi roli va klubdagi tarixi</span>
+      </div>
+    </div>
+    <div class="career-summary-row">
+      {% for item in career_summary %}
+      <div>
+        <span>{{ item.label }}</span>
+        <strong>{{ item.value }}</strong>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="career-info-list">
+      {% for item in career_items %}
+      <div class="career-info-row">
+        <div class="career-info-icon"><i class="bi {{ item.icon }}"></i></div>
+        <div>
+          <span>{{ item.label }}</span>
+          <strong>{{ item.value }}</strong>
+          <small>{{ item.hint }}</small>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </article>
+  <article class="panel-card player-insight-panel performance-panel">
+    <div class="panel-head insight-panel-head">
+      <div>
+        <h3>Samaradorlik</h3>
+        <span>{{ performance_summary.caption }}</span>
+      </div>
+      <div class="performance-score">
+        <strong>{{ performance_summary.score }}%</strong>
+        <span>{{ performance_summary.status }}</span>
+      </div>
+    </div>
+    <div class="progress-list performance-list">
+      {% for metric in performance_metrics %}
+      <div class="performance-item">
+        <div class="progress-head">
+          <div>
+            <span>{{ metric.label }}</span>
+            <small>{{ metric.caption }}</small>
+          </div>
+          <strong>{{ metric.value }}</strong>
+        </div>
+        <div class="progress-bar performance-bar {{ metric.accent }}">
+          <span style="width:{{ metric.percent }}%"></span>
+        </div>
+        <div class="performance-percent">{{ metric.percent }}%</div>
+      </div>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+{% endblock %}

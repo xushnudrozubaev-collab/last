@@ -1,0 +1,1616 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$TMB3ZZeJmSaMMqvrUrCxif$N/1iBnxuEJZs0l4cxiXzxAm8rWEUaB9MME/EMI9a508=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "coachadmin",
+      "first_name": "Aziz",
+      "last_name": "Rahimov",
+      "email": "coach@example.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-04-05T12:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.coachprofile",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "user": 1,
+      "full_name": "Aziz Rahimov",
+      "role": "Bosh murabbiy",
+      "phone": "+998901234567",
+      "club_name": "CoachPro Academy",
+      "experience_years": 9,
+      "bio": "Yoshlar jamoasi bilan ishlovchi tajribali futbol murabbiyi."
+    }
+  },
+  {
+    "model": "core.userprofile",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "user": 1,
+      "language": "uz",
+      "theme": "light",
+      "phone": "+998901234567",
+      "avatar": "",
+      "email_notifications": true,
+      "sms_notifications": false,
+      "system_alerts": true
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Ter Stegen",
+      "shirt_number": 1,
+      "position": "goalkeeper",
+      "age": 25,
+      "nationality": "Germany",
+      "height": "1.87",
+      "weight": 85,
+      "join_date": "2014-07-01",
+      "photo": "",
+      "short_note": "Asosiy darvozabon."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 1,
+      "matches_played": 48,
+      "goals": 0,
+      "assists": 0,
+      "rating": "8.1"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 2,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Jasper Cillessen",
+      "shirt_number": 13,
+      "position": "goalkeeper",
+      "age": 28,
+      "nationality": "Netherlands",
+      "height": "1.88",
+      "weight": 83,
+      "join_date": "2016-08-25",
+      "photo": "",
+      "short_note": "Zaxira darvozabon."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 2,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 2,
+      "matches_played": 11,
+      "goals": 0,
+      "assists": 0,
+      "rating": "7.2"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 3,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Gerard Pique",
+      "shirt_number": 3,
+      "position": "defender",
+      "age": 30,
+      "nationality": "Spain",
+      "height": "1.94",
+      "weight": 85,
+      "join_date": "2008-07-01",
+      "photo": "",
+      "short_note": "Markaziy himoya yetakchisi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 3,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 3,
+      "matches_played": 49,
+      "goals": 5,
+      "assists": 2,
+      "rating": "8.4"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 4,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Samuel Umtiti",
+      "shirt_number": 23,
+      "position": "defender",
+      "age": 24,
+      "nationality": "France",
+      "height": "1.82",
+      "weight": 75,
+      "join_date": "2016-07-12",
+      "photo": "",
+      "short_note": "Chap markaziy himoyachi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 4,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 4,
+      "matches_played": 40,
+      "goals": 1,
+      "assists": 0,
+      "rating": "8.2"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 5,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Thomas Vermaelen",
+      "shirt_number": 24,
+      "position": "defender",
+      "age": 32,
+      "nationality": "Belgium",
+      "height": "1.83",
+      "weight": 80,
+      "join_date": "2014-08-09",
+      "photo": "",
+      "short_note": "Tajribali markaziy himoyachi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 5,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 5,
+      "matches_played": 20,
+      "goals": 0,
+      "assists": 1,
+      "rating": "7.4"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 6,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Javier Mascherano",
+      "shirt_number": 14,
+      "position": "defender",
+      "age": 33,
+      "nationality": "Argentina",
+      "height": "1.74",
+      "weight": 73,
+      "join_date": "2010-08-30",
+      "photo": "",
+      "short_note": "Ko'p qirrali himoyachi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 6,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 6,
+      "matches_played": 12,
+      "goals": 0,
+      "assists": 0,
+      "rating": "7.0"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 7,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Jordi Alba",
+      "shirt_number": 18,
+      "position": "defender",
+      "age": 28,
+      "nationality": "Spain",
+      "height": "1.70",
+      "weight": 68,
+      "join_date": "2012-07-01",
+      "photo": "",
+      "short_note": "Chap qanot himoyachisi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 7,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 7,
+      "matches_played": 48,
+      "goals": 3,
+      "assists": 8,
+      "rating": "8.5"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 8,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Lucas Digne",
+      "shirt_number": 19,
+      "position": "defender",
+      "age": 24,
+      "nationality": "France",
+      "height": "1.78",
+      "weight": 74,
+      "join_date": "2016-07-13",
+      "photo": "",
+      "short_note": "Chap qanot zaxirasi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 8,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 8,
+      "matches_played": 20,
+      "goals": 1,
+      "assists": 2,
+      "rating": "7.1"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 9,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Nelson Semedo",
+      "shirt_number": 2,
+      "position": "defender",
+      "age": 24,
+      "nationality": "Portugal",
+      "height": "1.77",
+      "weight": 67,
+      "join_date": "2017-07-14",
+      "photo": "",
+      "short_note": "O'ng qanot himoyachisi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 9,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 9,
+      "matches_played": 36,
+      "goals": 0,
+      "assists": 5,
+      "rating": "7.6"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 10,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Sergi Roberto",
+      "shirt_number": 20,
+      "position": "defender",
+      "age": 25,
+      "nationality": "Spain",
+      "height": "1.78",
+      "weight": 68,
+      "join_date": "2013-07-01",
+      "photo": "",
+      "short_note": "O'ng qanot va markazda o'ynaydi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 10,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 10,
+      "matches_played": 48,
+      "goals": 1,
+      "assists": 7,
+      "rating": "7.9"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 11,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Aleix Vidal",
+      "shirt_number": 22,
+      "position": "defender",
+      "age": 28,
+      "nationality": "Spain",
+      "height": "1.77",
+      "weight": 70,
+      "join_date": "2015-07-01",
+      "photo": "",
+      "short_note": "O'ng qanot himoyasi va winger."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 11,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 11,
+      "matches_played": 25,
+      "goals": 2,
+      "assists": 4,
+      "rating": "7.3"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 12,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Yerry Mina",
+      "shirt_number": 25,
+      "position": "defender",
+      "age": 23,
+      "nationality": "Colombia",
+      "height": "1.95",
+      "weight": 94,
+      "join_date": "2018-01-11",
+      "photo": "",
+      "short_note": "Qishki transfer markaziy himoyachi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 12,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 12,
+      "matches_played": 6,
+      "goals": 0,
+      "assists": 0,
+      "rating": "6.7"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 13,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Marc Cucurella",
+      "shirt_number": 32,
+      "position": "defender",
+      "age": 19,
+      "nationality": "Spain",
+      "height": "1.72",
+      "weight": 66,
+      "join_date": "2017-07-01",
+      "photo": "",
+      "short_note": "La Masia chap qanot himoyachisi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 13,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 13,
+      "matches_played": 1,
+      "goals": 0,
+      "assists": 0,
+      "rating": "6.4"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 14,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Sergi Palencia",
+      "shirt_number": 34,
+      "position": "defender",
+      "age": 21,
+      "nationality": "Spain",
+      "height": "1.69",
+      "weight": 68,
+      "join_date": "2017-07-01",
+      "photo": "",
+      "short_note": "Barca B himoyachisi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 14,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 14,
+      "matches_played": 1,
+      "goals": 0,
+      "assists": 0,
+      "rating": "6.3"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 15,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Juan Miranda",
+      "shirt_number": 35,
+      "position": "defender",
+      "age": 18,
+      "nationality": "Spain",
+      "height": "1.85",
+      "weight": 76,
+      "join_date": "2017-07-01",
+      "photo": "",
+      "short_note": "Yosh chap himoyachi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 15,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 15,
+      "matches_played": 1,
+      "goals": 0,
+      "assists": 0,
+      "rating": "6.3"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 16,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "David Costas",
+      "shirt_number": 36,
+      "position": "defender",
+      "age": 22,
+      "nationality": "Spain",
+      "height": "1.82",
+      "weight": 76,
+      "join_date": "2018-01-01",
+      "photo": "",
+      "short_note": "Markaziy himoyachi keng tarkibda."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 16,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 16,
+      "matches_played": 1,
+      "goals": 0,
+      "assists": 0,
+      "rating": "6.2"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 17,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Sergio Busquets",
+      "shirt_number": 5,
+      "position": "midfielder",
+      "age": 29,
+      "nationality": "Spain",
+      "height": "1.89",
+      "weight": 76,
+      "join_date": "2008-07-01",
+      "photo": "",
+      "short_note": "Tayanch yarim himoya ustuni."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 17,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 17,
+      "matches_played": 50,
+      "goals": 1,
+      "assists": 4,
+      "rating": "8.3"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 18,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Ivan Rakitic",
+      "shirt_number": 4,
+      "position": "midfielder",
+      "age": 29,
+      "nationality": "Croatia",
+      "height": "1.84",
+      "weight": 78,
+      "join_date": "2014-07-01",
+      "photo": "",
+      "short_note": "Markaziy yarim himoyachi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 18,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 18,
+      "matches_played": 55,
+      "goals": 4,
+      "assists": 5,
+      "rating": "8.4"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 19,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Andres Iniesta",
+      "shirt_number": 8,
+      "position": "midfielder",
+      "age": 33,
+      "nationality": "Spain",
+      "height": "1.71",
+      "weight": 68,
+      "join_date": "2002-07-01",
+      "photo": "",
+      "short_note": "Kapitan va pleymeyker."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 19,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 19,
+      "matches_played": 44,
+      "goals": 2,
+      "assists": 3,
+      "rating": "8.0"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 20,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Paulinho",
+      "shirt_number": 15,
+      "position": "midfielder",
+      "age": 29,
+      "nationality": "Brazil",
+      "height": "1.83",
+      "weight": 81,
+      "join_date": "2017-08-14",
+      "photo": "",
+      "short_note": "Box-to-box yarim himoyachi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 20,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 20,
+      "matches_played": 49,
+      "goals": 9,
+      "assists": 3,
+      "rating": "8.1"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 21,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Andre Gomes",
+      "shirt_number": 21,
+      "position": "midfielder",
+      "age": 24,
+      "nationality": "Portugal",
+      "height": "1.88",
+      "weight": 84,
+      "join_date": "2016-07-21",
+      "photo": "",
+      "short_note": "Markaziy yarim himoyachi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 21,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 21,
+      "matches_played": 31,
+      "goals": 0,
+      "assists": 3,
+      "rating": "6.9"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 22,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Denis Suarez",
+      "shirt_number": 6,
+      "position": "midfielder",
+      "age": 24,
+      "nationality": "Spain",
+      "height": "1.76",
+      "weight": 67,
+      "join_date": "2016-07-04",
+      "photo": "",
+      "short_note": "Aylanuvchi yarim himoyachi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 22,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 22,
+      "matches_played": 27,
+      "goals": 3,
+      "assists": 5,
+      "rating": "7.2"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 23,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Rafinha",
+      "shirt_number": 12,
+      "position": "midfielder",
+      "age": 24,
+      "nationality": "Brazil",
+      "height": "1.74",
+      "weight": 71,
+      "join_date": "2013-07-01",
+      "photo": "",
+      "short_note": "Jarohatlardan keyin qaytgan yarim himoyachi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 23,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 23,
+      "matches_played": 1,
+      "goals": 0,
+      "assists": 0,
+      "rating": "6.4"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 24,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Philippe Coutinho",
+      "shirt_number": 14,
+      "position": "midfielder",
+      "age": 25,
+      "nationality": "Brazil",
+      "height": "1.72",
+      "weight": 68,
+      "join_date": "2018-01-06",
+      "photo": "",
+      "short_note": "Qishki transfer hujumkor yarim himoyachi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 24,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 24,
+      "matches_played": 22,
+      "goals": 9,
+      "assists": 6,
+      "rating": "8.5"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 25,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Carles Alena",
+      "shirt_number": 26,
+      "position": "midfielder",
+      "age": 19,
+      "nationality": "Spain",
+      "height": "1.80",
+      "weight": 73,
+      "join_date": "2017-07-01",
+      "photo": "",
+      "short_note": "La Masia markaziy yarim himoyachisi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 25,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 25,
+      "matches_played": 3,
+      "goals": 0,
+      "assists": 0,
+      "rating": "6.6"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 26,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Oriol Busquets",
+      "shirt_number": 28,
+      "position": "midfielder",
+      "age": 18,
+      "nationality": "Spain",
+      "height": "1.85",
+      "weight": 77,
+      "join_date": "2017-07-01",
+      "photo": "",
+      "short_note": "Yosh tayanch yarim himoyachi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 26,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 26,
+      "matches_played": 1,
+      "goals": 0,
+      "assists": 0,
+      "rating": "6.2"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 27,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Christian Rivera",
+      "shirt_number": 30,
+      "position": "midfielder",
+      "age": 20,
+      "nationality": "Spain",
+      "height": "1.91",
+      "weight": 78,
+      "join_date": "2018-01-01",
+      "photo": "",
+      "short_note": "Keng tarkib yarim himoyachisi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 27,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 27,
+      "matches_played": 0,
+      "goals": 0,
+      "assists": 0,
+      "rating": "6.0"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 28,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Martin Hongla",
+      "shirt_number": 31,
+      "position": "midfielder",
+      "age": 19,
+      "nationality": "Cameroon",
+      "height": "1.82",
+      "weight": 78,
+      "join_date": "2017-07-01",
+      "photo": "",
+      "short_note": "Keng tarkib va B jamoa yarim himoyachisi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 28,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 28,
+      "matches_played": 0,
+      "goals": 0,
+      "assists": 0,
+      "rating": "6.0"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 29,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Marcus McGuane",
+      "shirt_number": 27,
+      "position": "midfielder",
+      "age": 19,
+      "nationality": "England",
+      "height": "1.75",
+      "weight": 70,
+      "join_date": "2018-01-31",
+      "photo": "",
+      "short_note": "Qishki yosh yarim himoyachi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 29,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 29,
+      "matches_played": 0,
+      "goals": 0,
+      "assists": 0,
+      "rating": "6.0"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 30,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Lionel Messi",
+      "shirt_number": 10,
+      "position": "forward",
+      "age": 30,
+      "nationality": "Argentina",
+      "height": "1.70",
+      "weight": 72,
+      "join_date": "2004-07-01",
+      "photo": "",
+      "short_note": "Jamoa yetakchisi va asosiy gol muallifi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 30,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 30,
+      "matches_played": 54,
+      "goals": 45,
+      "assists": 14,
+      "rating": "9.7"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 31,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Luis Suarez",
+      "shirt_number": 9,
+      "position": "forward",
+      "age": 30,
+      "nationality": "Uruguay",
+      "height": "1.82",
+      "weight": 86,
+      "join_date": "2014-07-11",
+      "photo": "",
+      "short_note": "Markaziy hujumchi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 31,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 31,
+      "matches_played": 51,
+      "goals": 31,
+      "assists": 13,
+      "rating": "8.9"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 32,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Ousmane Dembele",
+      "shirt_number": 11,
+      "position": "forward",
+      "age": 20,
+      "nationality": "France",
+      "height": "1.78",
+      "weight": 67,
+      "join_date": "2017-08-25",
+      "photo": "",
+      "short_note": "Tezkor qanot hujumchisi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 32,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 32,
+      "matches_played": 23,
+      "goals": 4,
+      "assists": 9,
+      "rating": "7.7"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 33,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Gerard Deulofeu",
+      "shirt_number": 16,
+      "position": "forward",
+      "age": 23,
+      "nationality": "Spain",
+      "height": "1.77",
+      "weight": 73,
+      "join_date": "2017-07-01",
+      "photo": "",
+      "short_note": "Qanot hujumchisi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 33,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 33,
+      "matches_played": 17,
+      "goals": 2,
+      "assists": 3,
+      "rating": "6.9"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 34,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Paco Alcacer",
+      "shirt_number": 17,
+      "position": "forward",
+      "age": 24,
+      "nationality": "Spain",
+      "height": "1.76",
+      "weight": 71,
+      "join_date": "2016-08-30",
+      "photo": "",
+      "short_note": "Zaxira hujumchi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 34,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 34,
+      "matches_played": 23,
+      "goals": 7,
+      "assists": 4,
+      "rating": "7.3"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 35,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Jose Arnaiz",
+      "shirt_number": 29,
+      "position": "forward",
+      "age": 22,
+      "nationality": "Spain",
+      "height": "1.73",
+      "weight": 72,
+      "join_date": "2017-08-24",
+      "photo": "",
+      "short_note": "Kubok o'yinlarida ko'ringan hujumchi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 35,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 35,
+      "matches_played": 5,
+      "goals": 3,
+      "assists": 0,
+      "rating": "6.8"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 36,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Abel Ruiz",
+      "shirt_number": 33,
+      "position": "forward",
+      "age": 17,
+      "nationality": "Spain",
+      "height": "1.82",
+      "weight": 73,
+      "join_date": "2017-07-01",
+      "photo": "",
+      "short_note": "Yosh markaziy hujumchi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 36,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 36,
+      "matches_played": 0,
+      "goals": 0,
+      "assists": 0,
+      "rating": "6.1"
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 37,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "full_name": "Carles Perez",
+      "shirt_number": 37,
+      "position": "forward",
+      "age": 19,
+      "nationality": "Spain",
+      "height": "1.73",
+      "weight": 70,
+      "join_date": "2017-07-01",
+      "photo": "",
+      "short_note": "Yosh qanot hujumchisi."
+    }
+  },
+  {
+    "model": "core.playerstatistic",
+    "pk": 37,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "player": 37,
+      "matches_played": 0,
+      "goals": 0,
+      "assists": 0,
+      "rating": "6.1"
+    }
+  },
+  {
+    "model": "core.training",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "title": "Taktik mashg'ulot",
+      "training_type": "tactics",
+      "training_date": "2018-04-18",
+      "start_time": "09:00:00",
+      "end_time": "11:00:00",
+      "location": "Ciutat Esportiva",
+      "note": "4-4-2 va pressing bloklari.",
+      "attendance_total": 37,
+      "attendance_present": 34
+    }
+  },
+  {
+    "model": "core.training",
+    "pk": 2,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "title": "Jismoniy tayyorgarlik",
+      "training_type": "fitness",
+      "training_date": "2018-04-19",
+      "start_time": "10:00:00",
+      "end_time": "12:00:00",
+      "location": "Ciutat Esportiva",
+      "note": "Qisqa sprint va tiklanish.",
+      "attendance_total": 37,
+      "attendance_present": 35
+    }
+  },
+  {
+    "model": "core.training",
+    "pk": 3,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "title": "Tiklanish sessiyasi",
+      "training_type": "recovery",
+      "training_date": "2018-04-22",
+      "start_time": "11:00:00",
+      "end_time": "12:30:00",
+      "location": "Camp Tito Vilanova",
+      "note": "Finaldan keyingi tiklanish.",
+      "attendance_total": 37,
+      "attendance_present": 33
+    }
+  },
+  {
+    "model": "core.teamstatistic",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "title": "Jami futbolchilar",
+      "metric_value": "37",
+      "accent": "blue",
+      "change_text": "2017-18 Barcelona tarkibi",
+      "sort_order": 1
+    }
+  },
+  {
+    "model": "core.teamstatistic",
+    "pk": 2,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "title": "LaLiga gollari",
+      "metric_value": "99",
+      "accent": "cyan",
+      "change_text": "Mavsum yakuni",
+      "sort_order": 2
+    }
+  },
+  {
+    "model": "core.teamstatistic",
+    "pk": 3,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "title": "Kuboklar",
+      "metric_value": "2",
+      "accent": "green",
+      "change_text": "LaLiga va Copa del Rey",
+      "sort_order": 3
+    }
+  },
+  {
+    "model": "core.teamstatistic",
+    "pk": 4,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "title": "Messi gollari",
+      "metric_value": "34",
+      "accent": "purple",
+      "change_text": "Pichichi 2017-18",
+      "sort_order": 4
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Real Madrid",
+      "away_team": "FC Barcelona",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=realmadrid.com&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=fcbarcelona.com&sz=128",
+      "match_date": "2026-04-14",
+      "match_time": "21:00:00",
+      "stadium": "Santiago Bernabeu",
+      "status": "played",
+      "home_score": 2,
+      "away_score": 3,
+      "attendance": 78012,
+      "referee": "Jose Luis Munuera Montero",
+      "note": "El Clasico."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 2,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Atletico Madrid",
+      "away_team": "Sevilla",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=atleticodemadrid.com&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=sevillafc.es&sz=128",
+      "match_date": "2026-04-12",
+      "match_time": "20:30:00",
+      "stadium": "Metropolitano",
+      "status": "played",
+      "home_score": 1,
+      "away_score": 1,
+      "attendance": 61221,
+      "referee": "Alejandro Hernandez Hernandez",
+      "note": "Qattiq markaziy oyin."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 3,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Real Sociedad",
+      "away_team": "Villarreal",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=realsociedad.eus&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=villarrealcf.es&sz=128",
+      "match_date": "2026-04-16",
+      "match_time": "22:00:00",
+      "stadium": "Reale Arena",
+      "status": "upcoming",
+      "home_score": null,
+      "away_score": null,
+      "attendance": 34780,
+      "referee": "Juan Martinez Munuera",
+      "note": "Yevrokubok uchun muhim bahs."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 4,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Valencia",
+      "away_team": "Real Betis",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=valenciacf.com&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=realbetisbalompie.es&sz=128",
+      "match_date": "2026-04-11",
+      "match_time": "19:15:00",
+      "stadium": "Mestalla",
+      "status": "played",
+      "home_score": 2,
+      "away_score": 0,
+      "attendance": 44210,
+      "referee": "Guillermo Cuadra Fernandez",
+      "note": "Valencia uyda ustun bo'ldi."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 5,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Athletic Club",
+      "away_team": "Celta Vigo",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=athletic-club.eus&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=rccelta.es&sz=128",
+      "match_date": "2026-04-18",
+      "match_time": "18:30:00",
+      "stadium": "San Mames",
+      "status": "upcoming",
+      "home_score": null,
+      "away_score": null,
+      "attendance": 48500,
+      "referee": "Cesar Soto Grado",
+      "note": "Basklar uy uchrashuvi."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 6,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Getafe",
+      "away_team": "Osasuna",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=getafecf.com&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=osasuna.es&sz=128",
+      "match_date": "2026-04-09",
+      "match_time": "18:00:00",
+      "stadium": "Coliseum",
+      "status": "played",
+      "home_score": 1,
+      "away_score": 0,
+      "attendance": 13240,
+      "referee": "Javier Alberola Rojas",
+      "note": "Minimal hisob."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 7,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Girona",
+      "away_team": "Mallorca",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=gironafc.cat&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=rcdmallorca.es&sz=128",
+      "match_date": "2026-04-15",
+      "match_time": "20:00:00",
+      "stadium": "Montilivi",
+      "status": "live",
+      "home_score": 2,
+      "away_score": 1,
+      "attendance": 11980,
+      "referee": "Isidro Diaz de Mera",
+      "note": "Hali davom etmoqda."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 8,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Rayo Vallecano",
+      "away_team": "Las Palmas",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=rayovallecano.es&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=udlaspalmas.es&sz=128",
+      "match_date": "2026-04-13",
+      "match_time": "21:30:00",
+      "stadium": "Vallecas",
+      "status": "played",
+      "home_score": 3,
+      "away_score": 2,
+      "attendance": 14520,
+      "referee": "Mario Melero Lopez",
+      "note": "Ochiq hujumkor uchrashuv."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 9,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Alaves",
+      "away_team": "Granada",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=deportivoalaves.com&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=granadacf.es&sz=128",
+      "match_date": "2026-04-19",
+      "match_time": "17:00:00",
+      "stadium": "Mendizorrotza",
+      "status": "upcoming",
+      "home_score": null,
+      "away_score": null,
+      "attendance": 17310,
+      "referee": "Francisco Jose Hernandez Maeso",
+      "note": "Quyi qism uchun duel."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 10,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Espanyol",
+      "away_team": "Cadiz",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=rcdespanyol.com&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=cadizcf.com&sz=128",
+      "match_date": "2026-04-10",
+      "match_time": "22:15:00",
+      "stadium": "Stage Front Stadium",
+      "status": "played",
+      "home_score": 2,
+      "away_score": 2,
+      "attendance": 22140,
+      "referee": "Ricardo de Burgos Bengoetxea",
+      "note": "Durrang bilan yakunlandi."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 11,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Real Madrid",
+      "away_team": "Valencia",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=realmadrid.com&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=valenciacf.com&sz=128",
+      "match_date": "2026-04-22",
+      "match_time": "22:00:00",
+      "stadium": "Santiago Bernabeu",
+      "status": "upcoming",
+      "home_score": null,
+      "away_score": null,
+      "attendance": 76000,
+      "referee": "Pablo Gonzalez Fuertes",
+      "note": "Chempionlik poygasi bahsi."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 12,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "FC Barcelona",
+      "away_team": "Athletic Club",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=fcbarcelona.com&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=athletic-club.eus&sz=128",
+      "match_date": "2026-04-20",
+      "match_time": "21:00:00",
+      "stadium": "Estadi Olimpic",
+      "status": "upcoming",
+      "home_score": null,
+      "away_score": null,
+      "attendance": 50110,
+      "referee": "Juan Pulido Santana",
+      "note": "Top-4 uchun muhim o'yin."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 13,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Sevilla",
+      "away_team": "Real Sociedad",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=sevillafc.es&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=realsociedad.eus&sz=128",
+      "match_date": "2026-04-08",
+      "match_time": "19:30:00",
+      "stadium": "Ramon Sanchez-Pizjuan",
+      "status": "played",
+      "home_score": 0,
+      "away_score": 1,
+      "attendance": 38950,
+      "referee": "Carlos del Cerro Grande",
+      "note": "Mehmonlar qarshi hujumda yutdi."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 14,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Villarreal",
+      "away_team": "Atletico Madrid",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=villarrealcf.es&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=atleticodemadrid.com&sz=128",
+      "match_date": "2026-04-17",
+      "match_time": "21:45:00",
+      "stadium": "La Ceramica",
+      "status": "upcoming",
+      "home_score": null,
+      "away_score": null,
+      "attendance": 21050,
+      "referee": "Adrian Cordero Vega",
+      "note": "Ikki kuchli jamoa toqnashuvi."
+    }
+  },
+  {
+    "model": "core.match",
+    "pk": 15,
+    "fields": {
+      "created_at": "2026-04-05T12:00:00Z",
+      "updated_at": "2026-04-05T12:00:00Z",
+      "home_team": "Real Betis",
+      "away_team": "Girona",
+      "home_logo_url": "https://www.google.com/s2/favicons?domain=realbetisbalompie.es&sz=128",
+      "away_logo_url": "https://www.google.com/s2/favicons?domain=gironafc.cat&sz=128",
+      "match_date": "2026-04-21",
+      "match_time": "20:45:00",
+      "stadium": "Benito Villamarin",
+      "status": "upcoming",
+      "home_score": null,
+      "away_score": null,
+      "attendance": 46320,
+      "referee": "Miguel Angel Ortiz Arias",
+      "note": "Yuqori temp kutilmoqda."
+    }
+  }
+]

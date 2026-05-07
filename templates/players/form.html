@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Futbolchi formasi | CoachPro{% endblock %}
+{% block content %}
+<section class="page-header"><span class="section-eyebrow">Futbolchi</span><h2 class="section-title">{% if object %}Futbolchini tahrirlash{% else %}Yangi futbolchi qo'shish{% endif %}</h2><p class="section-subtitle">Figma uslubidagi forma strukturasida futbolchi ma'lumotlarini kiriting.</p></section>
+<form method="post" enctype="multipart/form-data" class="panel-card entity-form entity-form-dark">
+  {% csrf_token %}
+  <div class="form-grid">
+    {% for field in form %}
+    <div class="form-field entity-form-field {% if field.name == 'short_note' or field.name == 'photo' %}full-span{% endif %}">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<small class="field-error">{{ field.errors|join:', ' }}</small>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  <div class="form-actions"><a class="primary-btn ghost-btn" href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'player_list' %}{% endif %}">Bekor qilish</a><button class="primary-btn" type="submit">Saqlash</button></div>
+</form>
+{% endblock %}
