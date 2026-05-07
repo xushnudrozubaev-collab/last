@@ -4,9 +4,7 @@ services:
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    preDeployCommand: python manage.py migrate
-    initialDeployHook: python manage.py createsuperuser --noinput --username coachadmin --email coach@example.com
-    startCommand: gunicorn coach_platform.wsgi:application
+    startCommand: python manage.py migrate && python manage.py ensure_superuser && gunicorn coach_platform.wsgi:application
     healthCheckPath: /login/
     autoDeployTrigger: commit
     envVars:
@@ -22,6 +20,10 @@ services:
         fromDatabase:
           name: coach-platform-db
           property: connectionString
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: coachadmin
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: coach@example.com
       - key: DJANGO_SUPERUSER_PASSWORD
         sync: false
 
