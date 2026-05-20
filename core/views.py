@@ -1,18 +1,31 @@
+import json
 from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
+from django.core.exceptions import ValidationError
 from django.db.models import Prefetch
+from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.translation import activate
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 
+from .attendance import (
+    build_default_record,
+    calculate_all_player_stats,
+    calculate_player_attendance_stats,
+    calculate_team_attendance_stats,
+    get_training_duration_minutes,
+    serialize_attendance,
+    serialize_player,
+    serialize_training,
+)
 from .forms import LoginForm, MatchForm, PlayerForm, StyledPasswordChangeForm, TrainingForm, UserSettingsForm
-from .models import Match, Player, PlayerStatistic, TeamStatistic, Training, UserProfile
+from .models import Match, Player, PlayerStatistic, TeamStatistic, Training, TrainingAttendance, UserProfile
 
 
 class UzbekLoginView(LoginView):
@@ -40,6 +53,8 @@ class DashboardView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        attendance_summary = calculate_team_attendance_stats()
+        top_attendance_player = attendance_summary["top_player"]["player_name"] if attendance_summary["top_player"] else "-"
         context["stats"] = [
             {
                 "title": "Jami futbolchilar",
@@ -47,14 +62,6 @@ class DashboardView(TemplateView):
                 "change_text": "Tarkib nazorati",
                 "accent": "blue",
                 "trend_value": "+4.8%",
-                "trend_direction": "up",
-            },
-            {
-                "title": "Oyinlar soni",
-                "metric_value": str(Match.objects.count()),
-                "change_text": "So'nggi 6 oy",
-                "accent": "cyan",
-                "trend_value": "+2.1%",
                 "trend_direction": "up",
             },
             {
@@ -73,6 +80,46 @@ class DashboardView(TemplateView):
                 "trend_value": "+6.9%",
                 "trend_direction": "up",
             },
+            {
+                "title": "O'rtacha davomad",
+                "metric_value": f"{attendance_summary['average_attendance_percent']}%",
+                "change_text": "Mashg'ulot intizomi",
+                "accent": "cyan",
+                "trend_value": "Davomad",
+                "trend_direction": "up",
+            },
+            {
+                "title": "O'rtacha faollik",
+                "metric_value": f"{attendance_summary['average_activity_score']}/10",
+                "change_text": "Mashg'ulot bahosi",
+                "accent": "green",
+                "trend_value": "Faollik",
+                "trend_direction": "up",
+            },
+            {
+                "title": "Bugungi davomad",
+                "metric_value": f"{attendance_summary['today_attendance_percent']}%",
+                "change_text": "Bugungi mashg'ulot",
+                "accent": "blue",
+                "trend_value": "Bugun",
+                "trend_direction": "up",
+            },
+            {
+                "title": "Eng faol futbolchi",
+                "metric_value": top_attendance_player,
+                "change_text": "Umumiy reyting bo'yicha",
+                "accent": "purple",
+                "trend_value": "Top",
+                "trend_direction": "up",
+            },
+            {
+                "title": "Jarohat cheklovi",
+                "metric_value": str(attendance_summary["injury_related_count"]),
+                "change_text": "Bor yoki tiklanmoqda",
+                "accent": "purple",
+                "trend_value": "Nazorat",
+                "trend_direction": "down" if attendance_summary["injury_related_count"] else "up",
+            },
         ]
         players = list(Player.objects.prefetch_related("statistics").all())
         for player in players:
@@ -86,7 +133,6 @@ class DashboardView(TemplateView):
             ),
             reverse=True,
         )[:5]
-        context["recent_matches"] = Match.objects.all()[:4]
         context["upcoming_trainings"] = Training.objects.all()[:4]
         charts = {
             "labels": ["Yan", "Fev", "Mar", "Apr", "May", "Iyun"],
@@ -628,6 +674,270 @@ class TrainingDeleteView(DeleteView):
     model = Training
     template_name = "training/confirm_delete.html"
     success_url = reverse_lazy("training_list")
+
+
+@method_decorator(login_required, name="dispatch")
+class TrainingAttendanceView(TemplateView):
+    template_name = "attendance/index.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        trainings = list(Training.objects.order_by("-training_date", "-start_time"))
+        selected_training = trainings[0] if trainings else None
+        team_stats = calculate_team_attendance_stats()
+        player_stats = team_stats["player_stats"]
+        chart_rows = [item for item in player_stats if item["total_marked_trainings"]]
+        context["trainings"] = trainings
+        context["selected_training"] = selected_training
+        context["players"] = Player.objects.all()
+        context["attendance_status_choices"] = TrainingAttendance.STATUS_CHOICES
+        context["injury_status_choices"] = TrainingAttendance.INJURY_CHOICES
+        context["fatigue_levels"] = range(1, 6)
+        context["activity_scores"] = range(1, 11)
+        context["team_stats"] = team_stats
+        context["player_stats"] = player_stats
+        context["attendance_charts"] = {
+            "labels": [item["player_name"] for item in chart_rows],
+            "attendance": [item["attendance_percent"] for item in chart_rows],
+            "ratings": [item["overall_activity_rating"] for item in chart_rows],
+            "statusLabels": list(team_stats["status_counts"].keys()),
+            "statusValues": list(team_stats["status_counts"].values()),
+        }
+        return context
+
+
+def _json_ok(data=None, message="So'rov muvaffaqiyatli bajarildi."):
+    payload = {"success": True, "message": message}
+    if data is not None:
+        payload["data"] = data
+    return JsonResponse(payload)
+
+
+def _json_error(message, status=400, errors=None):
+    payload = {"success": False, "message": message}
+    if errors:
+        payload["errors"] = errors
+    return JsonResponse(payload, status=status)
+
+
+def _parse_json_body(request):
+    try:
+        return json.loads(request.body.decode("utf-8") or "{}")
+    except json.JSONDecodeError:
+        return None
+
+
+def _validation_error_messages(error):
+    if hasattr(error, "message_dict"):
+        return error.message_dict
+    return {"xatolik": error.messages}
+
+
+def _int_value(value, field_label):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        raise ValidationError({field_label: f"{field_label} butun son bo'lishi kerak."})
+
+
+def _record_values_from_payload(payload, training, existing_record=None):
+    existing_duration = (
+        existing_record.training_duration_minutes
+        if existing_record and existing_record.pk
+        else get_training_duration_minutes(training)
+    )
+    existing_minutes = existing_record.attended_minutes if existing_record else existing_duration
+    existing_fatigue = existing_record.fatigue_level if existing_record else 1
+    existing_activity = existing_record.activity_score if existing_record else 7
+    duration = _int_value(
+        payload.get("training_duration_minutes", existing_duration) or existing_duration,
+        "training_duration_minutes",
+    )
+    attended_minutes = _int_value(payload.get("attended_minutes", existing_minutes), "attended_minutes")
+    fatigue_level = _int_value(payload.get("fatigue_level", existing_fatigue), "fatigue_level")
+    activity_score = _int_value(payload.get("activity_score", existing_activity), "activity_score")
+    attendance_status = payload.get(
+        "attendance_status",
+        existing_record.attendance_status if existing_record else TrainingAttendance.STATUS_PRESENT,
+    )
+    injury_status = payload.get(
+        "injury_status",
+        existing_record.injury_status if existing_record else TrainingAttendance.INJURY_NO,
+    )
+    if attendance_status not in dict(TrainingAttendance.STATUS_CHOICES):
+        raise ValidationError({"attendance_status": "Davomad holati noto'g'ri yuborildi."})
+    if injury_status not in dict(TrainingAttendance.INJURY_CHOICES):
+        raise ValidationError({"injury_status": "Jarohat holati noto'g'ri yuborildi."})
+    return {
+        "attendance_status": attendance_status,
+        "attended_minutes": attended_minutes,
+        "training_duration_minutes": duration,
+        "fatigue_level": fatigue_level,
+        "activity_score": activity_score,
+        "injury_status": injury_status,
+        "coach_note": (
+            payload.get(
+                "coach_note",
+                existing_record.coach_note if existing_record else "",
+            )
+            or ""
+        ).strip(),
+    }
+
+
+@login_required
+def attendance_records_api(request):
+    if request.method != "GET":
+        return _json_error("Bu API uchun noto'g'ri so'rov turi yuborildi.", status=405)
+    records = TrainingAttendance.objects.select_related("training", "player").all()
+    return _json_ok(
+        {"records": [serialize_attendance(record) for record in records]},
+        "Davomad va faollik yozuvlari yuklandi.",
+    )
+
+
+@login_required
+def training_attendance_api(request, training_id):
+    if request.method != "GET":
+        return _json_error("Bu API uchun noto'g'ri so'rov turi yuborildi.", status=405)
+    training = Training.objects.filter(pk=training_id).first()
+    if not training:
+        return _json_error("Noto'g'ri mashg'ulot ID yuborildi.", status=404)
+    records = {
+        record.player_id: serialize_attendance(record)
+        for record in TrainingAttendance.objects.filter(training=training).select_related("training", "player")
+    }
+    rows = []
+    for player in Player.objects.all():
+        row = records.get(player.id)
+        if not row:
+            row = build_default_record(player, training)
+        rows.append(row)
+    return _json_ok(
+        {
+            "training": serialize_training(training),
+            "records": rows,
+            "status_choices": [label for _, label in TrainingAttendance.STATUS_CHOICES],
+            "injury_choices": [label for _, label in TrainingAttendance.INJURY_CHOICES],
+        },
+        "Mashg'ulot davomadi yuklandi.",
+    )
+
+
+@login_required
+def player_attendance_api(request, player_id):
+    if request.method != "GET":
+        return _json_error("Bu API uchun noto'g'ri so'rov turi yuborildi.", status=405)
+    player = Player.objects.filter(pk=player_id).first()
+    if not player:
+        return _json_error("Noto'g'ri futbolchi ID yuborildi.", status=404)
+    records = list(
+        TrainingAttendance.objects.filter(player=player).select_related("training", "player")
+    )
+    return _json_ok(
+        {
+            "player": serialize_player(player),
+            "history": [serialize_attendance(record) for record in records],
+            "statistics": calculate_player_attendance_stats(player, records),
+        },
+        "Futbolchi mashg'ulot tarixi yuklandi.",
+    )
+
+
+@login_required
+def save_training_attendance_api(request, training_id):
+    if request.method != "POST":
+        return _json_error("Bu API uchun noto'g'ri so'rov turi yuborildi.", status=405)
+    payload = _parse_json_body(request)
+    if payload is None:
+        return _json_error("Ma'lumotlarni saqlashda xatolik yuz berdi", errors={"json": ["JSON noto'g'ri yuborildi."]})
+    training = Training.objects.filter(pk=training_id).first()
+    if not training:
+        return _json_error("Noto'g'ri mashg'ulot ID yuborildi.", status=404)
+    records_payload = payload.get("records", [])
+    if not records_payload:
+        return _json_error("Hozircha ma'lumot mavjud emas")
+
+    saved_records = []
+    for item in records_payload:
+        player_id = item.get("player_id") or item.get("player", {}).get("id")
+        if not player_id:
+            return _json_error("Noto'g'ri futbolchi ID yuborildi.", errors={"player_id": ["Futbolchi tanlanmagan."]})
+        player = Player.objects.filter(pk=player_id).first()
+        if not player:
+            return _json_error("Noto'g'ri futbolchi ID yuborildi.", status=404)
+        try:
+            record = TrainingAttendance.objects.filter(training=training, player=player).first()
+            if record is None:
+                record = TrainingAttendance(training=training, player=player)
+            values = _record_values_from_payload(item, training, record)
+            for field, value in values.items():
+                setattr(record, field, value)
+            record.full_clean()
+            record.save()
+        except ValidationError as error:
+            return _json_error(
+                "Ma'lumotlarni saqlashda xatolik yuz berdi",
+                errors=_validation_error_messages(error),
+            )
+        saved_records.append(serialize_attendance(record))
+
+    present_count = TrainingAttendance.objects.filter(
+        training=training,
+        attendance_status=TrainingAttendance.STATUS_PRESENT,
+    ).count()
+    total_count = TrainingAttendance.objects.filter(training=training).count()
+    Training.objects.filter(pk=training.pk).update(
+        attendance_present=present_count,
+        attendance_total=total_count,
+    )
+    return _json_ok(
+        {"records": saved_records, "team_stats": calculate_team_attendance_stats()},
+        "Ma'lumotlar muvaffaqiyatli saqlandi",
+    )
+
+
+@login_required
+def attendance_record_detail_api(request, record_id):
+    record = TrainingAttendance.objects.select_related("training", "player").filter(pk=record_id).first()
+    if not record:
+        return _json_error("Davomad yozuvi topilmadi.", status=404)
+    if request.method == "GET":
+        return _json_ok({"record": serialize_attendance(record)}, "Davomad yozuvi yuklandi.")
+    if request.method in {"PUT", "PATCH"}:
+        payload = _parse_json_body(request)
+        if payload is None:
+            return _json_error("Ma'lumotlarni saqlashda xatolik yuz berdi", errors={"json": ["JSON noto'g'ri yuborildi."]})
+        try:
+            values = _record_values_from_payload(payload, record.training, record)
+            for field, value in values.items():
+                setattr(record, field, value)
+            record.full_clean()
+            record.save()
+        except ValidationError as error:
+            return _json_error(
+                "Ma'lumotlarni saqlashda xatolik yuz berdi",
+                errors=_validation_error_messages(error),
+            )
+        return _json_ok({"record": serialize_attendance(record)}, "Davomad yozuvi yangilandi.")
+    if request.method == "DELETE":
+        record.delete()
+        return _json_ok(message="Davomad yozuvi o'chirildi.")
+    return _json_error("Bu API uchun noto'g'ri so'rov turi yuborildi.", status=405)
+
+
+@login_required
+def team_attendance_stats_api(request):
+    if request.method != "GET":
+        return _json_error("Bu API uchun noto'g'ri so'rov turi yuborildi.", status=405)
+    return _json_ok(calculate_team_attendance_stats(), "Umumiy jamoa statistikasi yuklandi.")
+
+
+@login_required
+def players_attendance_stats_api(request):
+    if request.method != "GET":
+        return _json_error("Bu API uchun noto'g'ri so'rov turi yuborildi.", status=405)
+    return _json_ok({"players": calculate_all_player_stats()}, "Futbolchilar statistikasi yuklandi.")
 
 
 @method_decorator(login_required, name="dispatch")

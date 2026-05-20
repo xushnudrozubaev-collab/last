@@ -7,7 +7,7 @@
 </section>
 <section class="stats-grid">
   {% for item in stats %}
-  <article class="stat-card accent-{{ item.accent|default:'blue' }}">
+  <article class="stat-card dashboard-stat-card dashboard-stat-card-{{ forloop.counter }} accent-{{ item.accent|default:'blue' }}">
     <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
     <div class="stat-content">
       <p>{{ item.title }}</p>
@@ -15,7 +15,7 @@
       <div class="stat-meta-row">
         <span>{{ item.change_text }}</span>
         <span class="trend-pill trend-{{ item.trend_direction }}">
-          <i class="bi bi-arrow-{% if item.trend_direction == 'down' %}down{% else %}up{% endif %}"></i>
+          {% if item.trend_direction == 'down' %}↓{% else %}↑{% endif %}
           {{ item.trend_value }}
         </span>
       </div>
@@ -30,7 +30,7 @@
       <div>
         <span class="analytics-context">{{ charts.performance_summary.context }}</span>
         <h3>Jamoa samaradorligi</h3>
-        <p>O'yin nazorati, g'alabalar va umumiy intensity trendi.</p>
+        <p>Jamoa holati, mashg'ulot intizomi va umumiy forma trendi.</p>
       </div>
       <span class="period-badge"><i class="bi bi-calendar2-week"></i> Oxirgi 6 oy</span>
     </div>
@@ -140,7 +140,7 @@
     </div>
     <div class="table-shell dashboard-table-shell">
       <table class="top-players-table">
-        <thead><tr><th>Futbolchi</th><th>Pozitsiya</th><th>O'yin</th><th>Gol</th></tr></thead>
+        <thead><tr><th>Futbolchi</th><th>Pozitsiya</th><th>Reyting</th><th>Gol</th></tr></thead>
         <tbody>
           {% for player in players %}
           <tr>
@@ -162,7 +162,7 @@
             </td>
             <td><span class="badge {{ player.position }}">{{ player.get_position_display }}</span></td>
             {% with st=player.dashboard_stat %}
-            <td class="metric-cell">{% if st %}{{ st.matches_played }}{% else %}0{% endif %}</td>
+            <td class="metric-cell">{% if st %}{{ st.rating }}{% else %}0{% endif %}</td>
             <td class="metric-cell goal-cell">{% if st %}{{ st.goals }}{% else %}0{% endif %}</td>
             {% endwith %}
           </tr>
@@ -171,42 +171,6 @@
           {% endfor %}
         </tbody>
       </table>
-    </div>
-  </article>
-  <article class="panel-card dashboard-panel">
-    <div class="panel-head dashboard-panel-head">
-      <div class="panel-title-group">
-        <span class="panel-icon panel-icon-blue"><i class="bi bi-calendar2-week"></i></span>
-        <div>
-          <h3>So'nggi o'yinlar</h3>
-          <p>Natijalar, joy va statuslar</p>
-        </div>
-      </div>
-      <a class="panel-action-link" href="{% url 'match_list' %}">Barchasi <i class="bi bi-arrow-right"></i></a>
-    </div>
-    <div class="stack-list dashboard-stack">
-      {% for match in recent_matches %}
-      <a class="list-card dashboard-match-card" href="{{ match.get_absolute_url }}">
-        <div class="match-mini-main">
-          <div class="match-mini-teams">
-            <span class="team-mini-logo blue">
-              {% if match.home_logo_url %}<img src="{{ match.home_logo_url }}" alt="{{ match.home_team }}">{% else %}{{ match.home_team|slice:':2'|upper }}{% endif %}
-            </span>
-            <strong>{{ match.home_team }} - {{ match.away_team }}</strong>
-          </div>
-          <span class="dashboard-meta-line"><i class="bi bi-calendar-event"></i>{{ match.match_date|date:'d.m.Y' }} | {{ match.match_time|time:'H:i' }}</span>
-          <span class="dashboard-meta-line"><i class="bi bi-geo-alt"></i>{{ match.stadium }}</span>
-        </div>
-        <div class="dashboard-card-side">
-          {% if match.status != 'upcoming' %}
-          <span class="score-mini">{{ match.home_score|default:'0' }} - {{ match.away_score|default:'0' }}</span>
-          {% endif %}
-          <span class="badge status-badge {{ match.status }}">{{ match.get_status_display }}</span>
-        </div>
-      </a>
-      {% empty %}
-      <p class="muted-text">O'yinlar hali kiritilmagan.</p>
-      {% endfor %}
     </div>
   </article>
   <article class="panel-card dashboard-panel">

@@ -473,6 +473,325 @@
     }
   }
 
+  var attendancePage = document.querySelector('[data-attendance-page]');
+  if (attendancePage) {
+    var trainingSelect = document.getElementById('attendanceTrainingSelect');
+    var refreshButton = document.getElementById('attendanceRefreshButton');
+    var saveButton = document.getElementById('attendanceSaveButton');
+    var rowsBody = document.getElementById('attendanceRows');
+    var statsRowsBody = document.getElementById('attendanceStatsRows');
+    var messageBox = document.querySelector('[data-attendance-message]');
+    var durationBadge = document.querySelector('[data-attendance-duration]');
+    var attendanceChartData = parseJsonScript('attendance-charts-data') || {};
+    var attendanceCharts = {};
+    var attendanceStatuses = ['Qatnashdi', 'Kelmadi', 'Kechikdi', 'Uzrli sabab'];
+    var injuryStatuses = ["Yo'q", 'Bor', 'Tiklanmoqda'];
+
+    function getCookie(name) {
+      var value = '; ' + document.cookie;
+      var parts = value.split('; ' + name + '=');
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return '';
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function showAttendanceMessage(text, tone) {
+      if (!messageBox) return;
+      messageBox.textContent = text || '';
+      messageBox.className = 'attendance-message ' + (tone || '');
+    }
+
+    function optionList(options, selected) {
+      return options.map(function (option) {
+        return '<option value="' + escapeHtml(option) + '"' + (option === selected ? ' selected' : '') + '>' + escapeHtml(option) + '</option>';
+      }).join('');
+    }
+
+    function loadTrainingAttendance() {
+      var trainingId = trainingSelect ? trainingSelect.value : '';
+      if (!trainingId) {
+        if (rowsBody) rowsBody.innerHTML = '<tr><td colspan="9">Mashg\'ulot tanlanmagan</td></tr>';
+        showAttendanceMessage("Mashg'ulot tanlanmagan", 'error');
+        return;
+      }
+      showAttendanceMessage("Ma'lumotlar yuklanmoqda...", 'loading');
+      if (rowsBody) rowsBody.innerHTML = '<tr><td colspan="9">Ma\'lumotlar yuklanmoqda...</td></tr>';
+      fetch('/api/attendance/training/' + trainingId + '/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function (response) { return response.json(); })
+        .then(function (payload) {
+          if (!payload.success) throw new Error(payload.message || "Ma'lumotlar yuklanmadi");
+          renderAttendanceRows(payload.data.records, payload.data.training.duration_minutes);
+          if (durationBadge) {
+            durationBadge.innerHTML = '<i class="bi bi-hourglass-split"></i>' + escapeHtml(payload.data.training.duration_display);
+          }
+          showAttendanceMessage('', '');
+        })
+        .catch(function (error) {
+          if (rowsBody) rowsBody.innerHTML = '<tr><td colspan="9">Ma\'lumotlar yuklanmadi</td></tr>';
+          showAttendanceMessage(error.message || "Ma'lumotlar yuklanmadi", 'error');
+        });
+    }
+
+    function renderAttendanceRows(records, duration) {
+      if (!rowsBody) return;
+      if (!records || !records.length) {
+        rowsBody.innerHTML = '<tr><td colspan="9">Hozircha ma\'lumot mavjud emas</td></tr>';
+        return;
+      }
+      rowsBody.innerHTML = records.map(function (record, index) {
+        var player = record.player || {};
+        var minutes = record.attended_minutes == null ? duration : record.attended_minutes;
+        return '<tr data-player-id="' + player.id + '" data-duration="' + duration + '">' +
+          '<td>' + (index + 1) + '</td>' +
+          '<td><strong>' + escapeHtml(player.full_name) + '</strong></td>' +
+          '<td>' + escapeHtml(player.position) + '</td>' +
+          '<td><select class="attendance-input" data-field="attendance_status">' + optionList(attendanceStatuses, record.attendance_status) + '</select></td>' +
+          '<td><input class="attendance-input" data-field="attended_minutes" type="number" min="0" max="' + duration + '" value="' + minutes + '"></td>' +
+          '<td><select class="attendance-input" data-field="fatigue_level">' + optionList(['1', '2', '3', '4', '5'], String(record.fatigue_level || 1)) + '</select></td>' +
+          '<td><select class="attendance-input" data-field="activity_score">' + optionList(['1','2','3','4','5','6','7','8','9','10'], String(record.activity_score || 7)) + '</select></td>' +
+          '<td><select class="attendance-input" data-field="injury_status">' + optionList(injuryStatuses, record.injury_status) + '</select></td>' +
+          '<td><textarea class="attendance-input attendance-note" data-field="coach_note" rows="2" placeholder="Murabbiy izohi">' + escapeHtml(record.coach_note || '') + '</textarea></td>' +
+        '</tr>';
+      }).join('');
+
+      rowsBody.querySelectorAll('[data-field="attendance_status"]').forEach(function (select) {
+        select.addEventListener('change', function () {
+          var row = select.closest('tr');
+          var minutesInput = row ? row.querySelector('[data-field="attended_minutes"]') : null;
+          if (!minutesInput) return;
+          var durationValue = Number(row.getAttribute('data-duration') || minutesInput.max || 90);
+          if (select.value === 'Kelmadi' || select.value === 'Uzrli sabab') {
+            minutesInput.value = 0;
+          } else if (Number(minutesInput.value || 0) === 0) {
+            minutesInput.value = durationValue;
+          }
+        });
+      });
+    }
+
+    function collectAttendanceRows() {
+      var trainingId = trainingSelect ? trainingSelect.value : '';
+      if (!trainingId) {
+        showAttendanceMessage("Mashg'ulot tanlanmagan", 'error');
+        return null;
+      }
+      var rows = Array.prototype.slice.call(rowsBody ? rowsBody.querySelectorAll('tr[data-player-id]') : []);
+      var records = [];
+      for (var i = 0; i < rows.length; i += 1) {
+        var row = rows[i];
+        var duration = Number(row.getAttribute('data-duration') || 90);
+        var minutes = Number(row.querySelector('[data-field="attended_minutes"]').value);
+        var fatigue = Number(row.querySelector('[data-field="fatigue_level"]').value);
+        var activity = Number(row.querySelector('[data-field="activity_score"]').value);
+        if (minutes < 0 || minutes > duration) {
+          showAttendanceMessage("Qatnashgan daqiqa mashg'ulot davomiyligidan katta bo'lishi mumkin emas", 'error');
+          return null;
+        }
+        if (fatigue < 1 || fatigue > 5) {
+          showAttendanceMessage('Charchoq darajasi 1 dan 5 gacha bo\'lishi kerak', 'error');
+          return null;
+        }
+        if (activity < 1 || activity > 10) {
+          showAttendanceMessage('Faollik bahosi 1 dan 10 gacha bo\'lishi kerak', 'error');
+          return null;
+        }
+        records.push({
+          player_id: Number(row.getAttribute('data-player-id')),
+          attendance_status: row.querySelector('[data-field="attendance_status"]').value,
+          attended_minutes: minutes,
+          training_duration_minutes: duration,
+          fatigue_level: fatigue,
+          activity_score: activity,
+          injury_status: row.querySelector('[data-field="injury_status"]').value,
+          coach_note: row.querySelector('[data-field="coach_note"]').value
+        });
+      }
+      return { trainingId: trainingId, records: records };
+    }
+
+    function saveAttendanceRows() {
+      var data = collectAttendanceRows();
+      if (!data) return;
+      showAttendanceMessage("Ma'lumotlar yuklanmoqda...", 'loading');
+      fetch('/api/attendance/training/' + data.trainingId + '/save/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ records: data.records })
+      })
+        .then(function (response) { return response.json(); })
+        .then(function (payload) {
+          if (!payload.success) throw new Error(payload.message || "Ma'lumotlarni saqlashda xatolik yuz berdi");
+          showAttendanceMessage("Ma'lumotlar muvaffaqiyatli saqlandi", 'success');
+          refreshAttendanceStats();
+        })
+        .catch(function (error) {
+          showAttendanceMessage(error.message || "Ma'lumotlarni saqlashda xatolik yuz berdi", 'error');
+        });
+    }
+
+    function attendanceLevelLabel(value) {
+      if (value > 80) return 'Yaxshi';
+      if (value >= 60) return "O'rtacha";
+      return "E'tibor talab qiladi";
+    }
+
+    function ratingLevelLabel(value) {
+      if (value > 85) return 'Yuqori natija';
+      if (value >= 70) return 'Barqaror';
+      return 'Rivojlantirish kerak';
+    }
+
+    function renderStatsTable(players) {
+      if (!statsRowsBody) return;
+      if (!players || !players.length) {
+        statsRowsBody.innerHTML = '<tr><td colspan="13">Hozircha ma\'lumot mavjud emas</td></tr>';
+        return;
+      }
+      statsRowsBody.innerHTML = players.map(function (stat, index) {
+        return '<tr>' +
+          '<td>' + (index + 1) + '</td>' +
+          '<td><strong>' + escapeHtml(stat.player_name) + '</strong></td>' +
+          '<td>' + escapeHtml(stat.position) + '</td>' +
+          '<td>' + stat.attended_trainings + '</td>' +
+          '<td>' + stat.absent_trainings + '</td>' +
+          '<td>' + stat.late_trainings + '</td>' +
+          '<td>' + stat.excused_trainings + '</td>' +
+          '<td><span class="attendance-progress-badge"><span class="mini-progress"><i style="width: ' + stat.attendance_percent + '%;"></i></span>' + stat.attendance_percent + '% · ' + attendanceLevelLabel(stat.attendance_percent) + '</span></td>' +
+          '<td>' + stat.average_participation_percent + '%</td>' +
+          '<td>' + stat.average_fatigue_level + '</td>' +
+          '<td>' + stat.average_activity_score + '</td>' +
+          '<td>' + stat.injury_count + ' bor / ' + stat.recovering_count + ' tiklanmoqda</td>' +
+          '<td><span class="rating-badge">' + stat.overall_activity_rating + '% · ' + ratingLevelLabel(stat.overall_activity_rating) + '</span></td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function updateAttendanceCards(teamStats) {
+      if (!teamStats) return;
+      var cardMap = {
+        total_trainings: teamStats.total_trainings,
+        average_attendance_percent: teamStats.average_attendance_percent + '%',
+        average_activity_score: teamStats.average_activity_score + '/10',
+        top_player: teamStats.top_player ? teamStats.top_player.player_name : '-',
+        most_absent_player: teamStats.most_absent_player ? teamStats.most_absent_player.player_name : '-',
+        injury_related_count: teamStats.injury_related_count
+      };
+      Object.keys(cardMap).forEach(function (key) {
+        var element = document.querySelector('[data-stat="' + key + '"]');
+        if (element) element.textContent = cardMap[key];
+      });
+    }
+
+    function renderAttendanceCharts(chartData) {
+      if (!chartData || typeof Chart === 'undefined') return;
+      var theme = getChartTheme();
+      Object.keys(attendanceCharts).forEach(function (key) {
+        if (attendanceCharts[key]) attendanceCharts[key].destroy();
+      });
+      attendanceCharts = {};
+
+      var percentCanvas = document.getElementById('attendancePercentChart');
+      if (percentCanvas && chartData.labels && chartData.labels.length) {
+        attendanceCharts.percent = new Chart(percentCanvas, {
+          type: 'bar',
+          data: {
+            labels: chartData.labels,
+            datasets: [{ label: 'Davomad foizi', data: chartData.attendance, backgroundColor: '#3B82F6', borderRadius: 10 }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, suggestedMax: 100, ticks: { color: theme.axis, callback: function (value) { return value + '%'; } }, grid: { color: theme.grid } },
+              x: { ticks: { color: theme.axis }, grid: { display: false } }
+            }
+          }
+        });
+      }
+
+      var ratingCanvas = document.getElementById('attendanceRatingChart');
+      if (ratingCanvas && chartData.labels && chartData.labels.length) {
+        attendanceCharts.rating = new Chart(ratingCanvas, {
+          type: 'bar',
+          data: {
+            labels: chartData.labels,
+            datasets: [{ label: 'Umumiy reyting', data: chartData.ratings, backgroundColor: '#22C55E', borderRadius: 10 }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, suggestedMax: 100, ticks: { color: theme.axis, callback: function (value) { return value + '%'; } }, grid: { color: theme.grid } },
+              x: { ticks: { color: theme.axis }, grid: { display: false } }
+            }
+          }
+        });
+      }
+
+      var statusCanvas = document.getElementById('attendanceStatusChart');
+      if (statusCanvas && chartData.statusLabels && chartData.statusLabels.length) {
+        attendanceCharts.status = new Chart(statusCanvas, {
+          type: 'bar',
+          data: {
+            labels: chartData.statusLabels,
+            datasets: [{ label: 'Holatlar soni', data: chartData.statusValues, backgroundColor: ['#22C55E', '#EF4444', '#F59E0B', '#3B82F6'], borderRadius: 10 }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, ticks: { color: theme.axis, precision: 0 }, grid: { color: theme.grid } },
+              x: { ticks: { color: theme.axis }, grid: { display: false } }
+            }
+          }
+        });
+      }
+    }
+
+    function refreshAttendanceStats() {
+      Promise.all([
+        fetch('/api/attendance/stats/team/').then(function (response) { return response.json(); }),
+        fetch('/api/attendance/stats/players/').then(function (response) { return response.json(); })
+      ]).then(function (responses) {
+        var teamPayload = responses[0];
+        var playersPayload = responses[1];
+        if (teamPayload.success) updateAttendanceCards(teamPayload.data);
+        if (playersPayload.success) {
+          var players = playersPayload.data.players || [];
+          renderStatsTable(players);
+          renderAttendanceCharts({
+            labels: players.filter(function (item) { return item.total_marked_trainings; }).map(function (item) { return item.player_name; }),
+            attendance: players.filter(function (item) { return item.total_marked_trainings; }).map(function (item) { return item.attendance_percent; }),
+            ratings: players.filter(function (item) { return item.total_marked_trainings; }).map(function (item) { return item.overall_activity_rating; }),
+            statusLabels: teamPayload.data ? Object.keys(teamPayload.data.status_counts || {}) : [],
+            statusValues: teamPayload.data ? Object.keys(teamPayload.data.status_counts || {}).map(function (key) { return teamPayload.data.status_counts[key]; }) : []
+          });
+        }
+      });
+    }
+
+    if (refreshButton) refreshButton.addEventListener('click', loadTrainingAttendance);
+    if (saveButton) saveButton.addEventListener('click', saveAttendanceRows);
+    if (trainingSelect) trainingSelect.addEventListener('change', loadTrainingAttendance);
+    renderAttendanceCharts(attendanceChartData);
+    loadTrainingAttendance();
+  }
+
   document.querySelectorAll('[data-chart-download]').forEach(function (button) {
     button.addEventListener('click', function () {
       var canvas = document.getElementById(button.getAttribute('data-chart-download'));
@@ -517,7 +836,7 @@
     input.addEventListener('change', function () {
       if (input.checked) {
         applyTheme(input.value);
-        if (document.getElementById('dashboard-charts-data') || document.getElementById('statistics-charts-data')) {
+        if (document.getElementById('dashboard-charts-data') || document.getElementById('statistics-charts-data') || document.getElementById('attendance-charts-data')) {
           window.location.reload();
         }
       }

@@ -1,4 +1,6 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse
 from urllib.parse import quote
@@ -156,6 +158,18 @@ class Match(TimeStampedModel):
     away_score = models.PositiveIntegerField(blank=True, null=True)
     attendance = models.PositiveIntegerField(blank=True, null=True)
     referee = models.CharField(max_length=120, blank=True)
+    possession_percent = models.PositiveSmallIntegerField(
+        default=50,
+        validators=[
+            MinValueValidator(0, message="To'p nazorati 0 dan kam bo'lishi mumkin emas."),
+            MaxValueValidator(100, message="To'p nazorati 100 dan oshmasligi kerak."),
+        ],
+    )
+    shots = models.PositiveIntegerField(default=0)
+    shots_on_target = models.PositiveIntegerField(default=0)
+    corners = models.PositiveIntegerField(default=0)
+    yellow_cards = models.PositiveIntegerField(default=0)
+    red_cards = models.PositiveIntegerField(default=0)
     note = models.TextField(blank=True)
 
     class Meta:
@@ -168,6 +182,16 @@ class Match(TimeStampedModel):
 
     def get_absolute_url(self):
         return reverse("match_detail", args=[self.pk])
+
+    @property
+    def result_label(self):
+        if self.home_score is None or self.away_score is None:
+            return "Rejalashtirilgan"
+        if self.home_score > self.away_score:
+            return "G'alaba"
+        if self.home_score < self.away_score:
+            return "Mag'lubiyat"
+        return "Durang"
 
 
 class Training(TimeStampedModel):
@@ -225,6 +249,191 @@ class Training(TimeStampedModel):
     @property
     def attendance_display(self):
         return f"{self.attendance_present}/{self.attendance_total}"
+
+
+class TrainingAttendance(TimeStampedModel):
+    STATUS_PRESENT = "Qatnashdi"
+    STATUS_ABSENT = "Qatnashmadi"
+    STATUS_LATE = "Kechikdi"
+    STATUS_EXCUSED = "Uzrli sabab"
+    STATUS_CHOICES = [
+        (STATUS_PRESENT, "Qatnashdi"),
+        (STATUS_ABSENT, "Qatnashmadi"),
+    ]
+
+    INJURY_NO = "Yo'q"
+    INJURY_YES = "Bor"
+    INJURY_RECOVERING = "Tiklanmoqda"
+    INJURY_CHOICES = [
+        (INJURY_NO, "Yo'q"),
+        (INJURY_YES, "Bor"),
+        (INJURY_RECOVERING, "Tiklanmoqda"),
+    ]
+
+    PHYSICAL_EXCELLENT = "excellent"
+    PHYSICAL_GOOD = "good"
+    PHYSICAL_AVERAGE = "average"
+    PHYSICAL_TIRED = "tired"
+    PHYSICAL_INJURED = "injured"
+    PHYSICAL_CHOICES = [
+        (PHYSICAL_EXCELLENT, "Zo'r"),
+        (PHYSICAL_GOOD, "Yaxshi"),
+        (PHYSICAL_AVERAGE, "O'rtacha"),
+        (PHYSICAL_TIRED, "Charchagan"),
+        (PHYSICAL_INJURED, "Jarohatlangan"),
+    ]
+
+    ACTIVITY_LOW = "low"
+    ACTIVITY_MEDIUM = "medium"
+    ACTIVITY_HIGH = "high"
+    ACTIVITY_CHOICES = [
+        (ACTIVITY_LOW, "Past"),
+        (ACTIVITY_MEDIUM, "O'rtacha"),
+        (ACTIVITY_HIGH, "Yuqori"),
+    ]
+
+    DISCIPLINE_GOOD = "good"
+    DISCIPLINE_WARNING = "warning"
+    DISCIPLINE_PROBLEM = "problem"
+    DISCIPLINE_CHOICES = [
+        (DISCIPLINE_GOOD, "Yaxshi"),
+        (DISCIPLINE_WARNING, "Ogohlantirish"),
+        (DISCIPLINE_PROBLEM, "Muammo bor"),
+    ]
+
+    training = models.ForeignKey(Training, on_delete=models.CASCADE, related_name="attendance_records")
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="training_attendance_records")
+    attendance_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PRESENT)
+    physical_condition = models.CharField(
+        max_length=20,
+        choices=PHYSICAL_CHOICES,
+        default=PHYSICAL_GOOD,
+    )
+    activity_level = models.CharField(
+        max_length=20,
+        choices=ACTIVITY_CHOICES,
+        default=ACTIVITY_MEDIUM,
+    )
+    discipline = models.CharField(
+        max_length=20,
+        choices=DISCIPLINE_CHOICES,
+        default=DISCIPLINE_GOOD,
+    )
+    rating = models.PositiveSmallIntegerField(
+        default=7,
+        validators=[
+            MinValueValidator(1, message="Baho 1 dan 10 gacha bo'lishi kerak."),
+            MaxValueValidator(10, message="Baho 1 dan 10 gacha bo'lishi kerak."),
+        ],
+    )
+    attended_minutes = models.PositiveIntegerField(
+        default=90,
+        validators=[MinValueValidator(0, message="Qatnashgan daqiqa manfiy bo'lishi mumkin emas.")],
+    )
+    training_duration_minutes = models.PositiveIntegerField(
+        default=90,
+        validators=[MinValueValidator(1, message="Mashg'ulot davomiyligi 1 daqiqadan kam bo'lmasligi kerak.")],
+    )
+    fatigue_level = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[
+            MinValueValidator(1, message="Charchoq darajasi 1 dan 10 gacha bo'lishi kerak."),
+            MaxValueValidator(10, message="Charchoq darajasi 1 dan 10 gacha bo'lishi kerak."),
+        ],
+    )
+    pain_level = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[
+            MinValueValidator(1, message="Og'riq darajasi 1 dan 10 gacha bo'lishi kerak."),
+            MaxValueValidator(10, message="Og'riq darajasi 1 dan 10 gacha bo'lishi kerak."),
+        ],
+    )
+    sleep_quality = models.PositiveSmallIntegerField(
+        default=7,
+        validators=[
+            MinValueValidator(1, message="Uyqu sifati 1 dan 10 gacha bo'lishi kerak."),
+            MaxValueValidator(10, message="Uyqu sifati 1 dan 10 gacha bo'lishi kerak."),
+        ],
+    )
+    activity_score = models.PositiveSmallIntegerField(
+        default=7,
+        validators=[
+            MinValueValidator(1, message="Faollik bahosi 1 dan 10 gacha bo'lishi kerak."),
+            MaxValueValidator(10, message="Faollik bahosi 1 dan 10 gacha bo'lishi kerak."),
+        ],
+    )
+    heart_rate = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        validators=[
+            MinValueValidator(30, message="Yurak urishi kamida 30 bpm bo'lishi kerak."),
+            MaxValueValidator(240, message="Yurak urishi 240 bpm dan oshmasligi kerak."),
+        ],
+    )
+    blood_pressure = models.CharField(max_length=20, blank=True)
+    body_temperature = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    measured_weight = models.DecimalField(max_digits=5, decimal_places=1, blank=True, null=True)
+    measured_height = models.PositiveSmallIntegerField(blank=True, null=True)
+    oxygen_saturation = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        validators=[
+            MinValueValidator(50, message="Kislorod darajasi kamida 50% bo'lishi kerak."),
+            MaxValueValidator(100, message="Kislorod darajasi 100% dan oshmasligi kerak."),
+        ],
+    )
+    respiratory_rate = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        validators=[
+            MinValueValidator(5, message="Nafas olish tezligi kamida 5 marta/min bo'lishi kerak."),
+            MaxValueValidator(80, message="Nafas olish tezligi 80 marta/min dan oshmasligi kerak."),
+        ],
+    )
+    injury_status = models.CharField(max_length=20, choices=INJURY_CHOICES, default=INJURY_NO)
+    injury_note = models.CharField(max_length=180, blank=True)
+    coach_note = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-training__training_date", "player__shirt_number", "player__full_name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["training", "player"],
+                name="unique_training_player_attendance",
+            )
+        ]
+        verbose_name = "mashg'ulot davomadi"
+        verbose_name_plural = "mashg'ulot davomadi"
+
+    def __str__(self):
+        return f"{self.training} - {self.player} - {self.attendance_status}"
+
+    def clean(self):
+        errors = {}
+        if self.attended_minutes < 0:
+            errors["attended_minutes"] = "Qatnashgan daqiqa manfiy bo'lishi mumkin emas."
+        if self.training_duration_minutes <= 0:
+            errors["training_duration_minutes"] = "Mashg'ulot davomiyligi 1 daqiqadan kam bo'lmasligi kerak."
+        if self.attended_minutes > self.training_duration_minutes:
+            errors["attended_minutes"] = "Qatnashgan daqiqa mashg'ulot davomiyligidan katta bo'lishi mumkin emas."
+        if self.attendance_status not in dict(self.STATUS_CHOICES):
+            errors["attendance_status"] = "Davomad holati noto'g'ri yuborildi."
+        if self.injury_status not in dict(self.INJURY_CHOICES):
+            errors["injury_status"] = "Jarohat holati noto'g'ri yuborildi."
+        if self.physical_condition not in dict(self.PHYSICAL_CHOICES):
+            errors["physical_condition"] = "Jismoniy holat noto'g'ri yuborildi."
+        if self.activity_level not in dict(self.ACTIVITY_CHOICES):
+            errors["activity_level"] = "Faollik holati noto'g'ri yuborildi."
+        if self.discipline not in dict(self.DISCIPLINE_CHOICES):
+            errors["discipline"] = "Intizom holati noto'g'ri yuborildi."
+        if errors:
+            raise ValidationError(errors)
+
+    @property
+    def participation_percent(self):
+        if not self.training_duration_minutes:
+            return 0
+        return round((self.attended_minutes / self.training_duration_minutes) * 100, 2)
 
 
 class TeamStatistic(TimeStampedModel):

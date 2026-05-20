@@ -13,17 +13,6 @@
 </section>
 
 <section class="settings-layout">
-  <aside class="settings-menu-card panel-card">
-    <nav class="settings-menu">
-      {% for key, label in settings_menu %}
-      <a href="#{{ key }}" class="settings-menu-link {% if forloop.first %}active{% endif %}" data-settings-link="{{ key }}">
-        <span>{{ label }}</span>
-        <i class="bi bi-chevron-right"></i>
-      </a>
-      {% endfor %}
-    </nav>
-  </aside>
-
   <div class="settings-content">
     <form id="settings-form" method="post" enctype="multipart/form-data" class="settings-stack">
       {% csrf_token %}
