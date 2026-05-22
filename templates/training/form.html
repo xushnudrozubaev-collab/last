@@ -1,6 +1,0 @@
-{% extends 'base.html' %}
-{% block title %}Mashg'ulot formasi | CoachPro{% endblock %}
-{% block content %}
-<section class="page-header"><span class="section-eyebrow">Mashg'ulot</span><h2 class="section-title">{% if object %}Mashg'ulotni tahrirlash{% else %}Yangi mashg'ulot qo'shish{% endif %}</h2><p class="section-subtitle">Mashg'ulot sana, vaqt, joy va qatnashuv ma'lumotlarini kiriting.</p></section>
-<form method="post" class="panel-card entity-form">{% csrf_token %}<div class="form-grid">{% for field in form %}<div class="form-field {% if field.name == 'note' %}full-span{% endif %}"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<small class="field-error">{{ field.errors|join:', ' }}</small>{% endif %}</div>{% endfor %}</div><div class="form-actions"><a class="primary-btn ghost-btn" href="{% url 'training_list' %}">Bekor qilish</a><button class="primary-btn" type="submit">Saqlash</button></div></form>
-{% endblock %}

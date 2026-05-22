@@ -1,20 +1,49 @@
-# Coach Platform
+# Football Coach Platform
 
-Futbol murabbiylari uchun raqamli kundalik va statistika platformasi.
+Bu loyiha ikki qismdan iborat bitta platforma:
 
-## Ishga tushirish
+- `backend/` - Django backend va REST API
+- `frontend/` - React + Vite frontend
 
-1. `python -m venv .venv`
-2. `.venv\Scripts\activate`
-3. `pip install -r requirements.txt`
-4. `.env.example` asosida `.env` yarating
-5. `python manage.py migrate`
-6. `python manage.py loaddata fixtures/sample_data.json`
-7. `python manage.py createsuperuser`
-8. `python manage.py runserver`
+Asosiy ishlatiladigan sayt:
 
-## Asosiy yo'nalish
+```text
+http://127.0.0.1:5173
+```
 
-- Figma export'dagi sidebar, navbar, kartalar va oq-ko'k premium sport uslubi saqlandi
-- Frontend `Django Templates + HTML + CSS + JavaScript` bilan yozildi
-- PostgreSQL env orqali yoqiladi, kerak bo'lsa lokal test uchun SQLite fallback ham mavjud
+Backend API alohida ishlaydi:
+
+```text
+http://127.0.0.1:8000/api
+```
+
+## Bitta Buyruq Bilan Ishga Tushirish
+
+Windows PowerShell terminalida loyiha rootida bajaring:
+
+```powershell
+.\start-dev.ps1
+```
+
+Script quyidagilarni qiladi:
+
+- backend `.venv` bo'lmasa yaratadi
+- Python kutubxonalarini o'rnatadi
+- frontend `node_modules` bo'lmasa `npm install` qiladi
+- Django migrationlarni bajaradi
+- backendni `127.0.0.1:8000` da ishga tushiradi
+- frontendni `127.0.0.1:5173` da ishga tushiradi
+
+## Muhim
+
+`127.0.0.1:8000` Django API va admin uchun.
+
+`127.0.0.1:5173` yangi asosiy React sayt.
+
+Frontend API manzili default:
+
+```text
+http://127.0.0.1:8000/api
+```
+
+Production deployda `VITE_API_URL` alohida berilishi kerak.
