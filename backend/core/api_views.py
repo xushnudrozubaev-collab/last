@@ -563,6 +563,12 @@ class DashboardAPIView(APIView):
 
         recent_trainings = Training.objects.order_by("-training_date", "-start_time")[:5]
         recent_matches = project_club_matches(Match.objects.all()).order_by("-match_date", "-match_time")[:5]
+        recent_completed_matches = (
+            project_club_matches(Match.objects.filter(status=Match.STATUS_PLAYED))
+            .exclude(home_score__isnull=True)
+            .exclude(away_score__isnull=True)
+            .order_by("-match_date", "-match_time")[:10]
+        )
         injured_records = (
             TrainingAttendance.objects.filter(
                 Q(injury_status__in=[TrainingAttendance.INJURY_YES, TrainingAttendance.INJURY_RECOVERING])
@@ -681,6 +687,7 @@ class DashboardAPIView(APIView):
             "top_recent_active_player": top_recent,
             "recent_trainings": TrainingSerializer(recent_trainings, many=True, context={"request": request}).data,
             "recent_matches": MatchSerializer(recent_matches, many=True, context={"request": request}).data,
+            "recent_completed_matches": MatchSerializer(recent_completed_matches, many=True, context={"request": request}).data,
             "injured_players": [
                 {
                     "player_id": record.player_id,

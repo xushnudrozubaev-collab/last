@@ -190,22 +190,9 @@ function FullScreenLoading() {
   );
 }
 
-const uzbekMonthNames = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
-
-function parseDate(value?: string) {
-  if (!value) return null;
-  const [datePart] = value.split('T');
-  const parts = datePart.split('-').map(Number);
-  const date = parts.length === 3 && parts.every(Number.isFinite)
-    ? new Date(parts[0], parts[1] - 1, parts[2])
-    : new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
 function formatDate(value?: string) {
-  const date = parseDate(value);
-  if (!date) return '-';
-  return `${date.getDate()}-${uzbekMonthNames[date.getMonth()]} ${date.getFullYear()}`;
+  if (!value) return '-';
+  return new Intl.DateTimeFormat('uz-UZ', { year: 'numeric', month: 'short', day: '2-digit' }).format(new Date(value));
 }
 
 function formatTime(value?: string) {
@@ -213,9 +200,14 @@ function formatTime(value?: string) {
 }
 
 function formatDateShort(value?: string) {
-  const date = parseDate(value);
-  if (!date) return value || '-';
-  return `${date.getDate()}-${uzbekMonthNames[date.getMonth()]}`;
+  if (!value) return '-';
+  try {
+    const d = new Date(value);
+    const months = ['yan', 'fev', 'mar', 'apr', 'may', 'iyn', 'iyl', 'avg', 'sen', 'okt', 'noy', 'dek'];
+    return `${d.getDate()} ${months[d.getMonth()]}`;
+  } catch {
+    return value;
+  }
 }
 
 function percent(value: number) {
@@ -844,10 +836,11 @@ function PremiumDashboardPage() {
     { value: 'month', label: 'Bu oy' },
     { value: 'season', label: 'Bu mavsum' },
   ];
-  const matchAnalytics = buildPremiumMatchAnalytics(data.recent_matches, periodStats?.match_record);
+  const completedMatches = data.recent_completed_matches?.length ? data.recent_completed_matches : data.recent_matches;
+  const matchAnalytics = buildPremiumMatchAnalytics(completedMatches, periodStats?.match_record);
   const attendanceSeries = buildPremiumAttendanceSeries(data.recent_trainings);
   const workloadSeries = buildPremiumWorkloadSeries(data.recent_trainings);
-  const performanceSeries = buildPremiumPerformanceSeries(data.recent_matches);
+  const performanceSeries = buildPremiumPerformanceSeries(completedMatches);
   const activePlayers = buildPremiumActivePlayers(players, data.top_recent_active_player);
   const weeklySummary = weeklyAttendanceSummary(data.recent_trainings);
   const kpis: PremiumKpiCardProps[] = [
@@ -1085,7 +1078,7 @@ function PremiumTeamFormPanel({ analytics }: { analytics: ReturnType<typeof buil
         </div>
       </div>
       <div className="recent-form-strip">
-        <span>So'nggi 5 o'yin</span>
+        <span>So'nggi 10 yakunlangan o'yin</span>
         <div>
           {(analytics.recentForm.length ? analytics.recentForm : ['Rejalashtirilgan']).map((result, index) => (
             <i className={`form-dot ${matchResultTone(result as MatchResultLabel) || 'empty'}`} key={`${result}-${index}`}>
@@ -2959,7 +2952,9 @@ function StatisticsAttendanceChart({ rows }: { rows: AttendanceTrendPoint[] }) {
   }, null);
   const latestPoint = rows[rows.length - 1];
   const formatChartDate = (value: string) => {
-    return formatDateShort(value);
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleDateString('uz-UZ', { day: '2-digit', month: 'short' });
   };
 
   return (
@@ -3192,7 +3187,7 @@ function StatisticsPage() {
       </div>
 
       <div className="statistics-rankings-grid">
-        <StatisticsRankingCard title="Eng ko'p kelgan" rows={rankings.most_present} mode="attendance" />
+        <StatisticsRankingCard title="Eng ko'p qatnashgan" rows={rankings.most_present} mode="attendance" />
         <StatisticsRankingCard title="Eng yuqori baho" rows={rankings.top_rated} mode="rating" />
       </div>
 
