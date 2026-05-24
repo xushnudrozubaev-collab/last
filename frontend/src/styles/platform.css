@@ -3980,6 +3980,10 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
   background: #fff;
 }
 
+.statistics-chart-card {
+  overflow: hidden;
+}
+
 .statistics-chart-card h2,
 .statistics-ranking-card h2,
 .statistics-players-card h2 {
@@ -3994,7 +3998,27 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
   width: 100%;
   height: 222px;
   display: block;
-  overflow: visible;
+  overflow: hidden;
+}
+
+.statistics-chart-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.statistics-chart-scroll::-webkit-scrollbar,
+.attendance-plot::-webkit-scrollbar {
+  height: 6px;
+}
+
+.statistics-chart-scroll::-webkit-scrollbar-thumb,
+.attendance-plot::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cbd5e1;
 }
 
 .statistics-chart-card svg line {
@@ -4088,12 +4112,16 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
   position: relative;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(42px, 1fr);
+  grid-auto-columns: 48px;
   align-items: end;
   gap: 14px;
   min-height: 150px;
   padding: 4px 6px 0;
   border-left: 1px solid #edf1f6;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
 }
 
 .attendance-grid-line {
@@ -4116,7 +4144,7 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
   grid-template-rows: 20px minmax(0, 112px) 22px;
   justify-items: center;
   align-items: end;
-  min-width: 0;
+  min-width: 48px;
 }
 
 .attendance-bar-group strong {

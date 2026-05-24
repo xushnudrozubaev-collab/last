@@ -2964,9 +2964,7 @@ function StatisticsAttendanceChart({ rows }: { rows: AttendanceTrendPoint[] }) {
   }, null);
   const latestPoint = rows[rows.length - 1];
   const formatChartDate = (value: string) => {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleDateString('uz-UZ', { day: '2-digit', month: 'short' });
+    return formatDateShort(value);
   };
 
   return (
@@ -3035,8 +3033,9 @@ function StatisticsAttendanceChart({ rows }: { rows: AttendanceTrendPoint[] }) {
 
 function StatisticsGoalsChart({ rows }: { rows: GoalAssistPoint[] }) {
   const maxValue = Math.max(1, ...rows.flatMap((row) => [row.goals, row.assists]));
-  const left = 22;
-  const right = 286;
+  const chartWidth = Math.max(300, rows.length * 58 + 42);
+  const left = 28;
+  const right = chartWidth - 14;
   const bottom = 88;
   const width = rows.length ? (right - left) / rows.length : 0;
   const barHeight = (value: number) => (value / maxValue) * 64;
@@ -3046,27 +3045,29 @@ function StatisticsGoalsChart({ rows }: { rows: GoalAssistPoint[] }) {
       <h2>Gol va assist taqqoslash</h2>
       {rows.length ? (
         <>
-          <svg viewBox="0 0 300 120" role="img" aria-label="Gol va assist taqqoslash">
-            {[0, 1, 2, 3].map((item) => {
-              const y = 16 + item * 24;
-              const label = Math.round(maxValue - (maxValue / 3) * item);
-              return <g key={item}><line x1={left} x2={right} y1={y} y2={y} /><text x="4" y={y + 3}>{label}</text></g>;
-            })}
-            {rows.map((row, index) => {
-              const center = left + width * index + width / 2;
-              const goalHeight = barHeight(row.goals);
-              const assistHeight = barHeight(row.assists);
-              return (
-                <g key={row.player_id}>
-                  <rect className="statistics-goal-bar" x={center - 15} y={bottom - goalHeight} width="12" height={goalHeight} rx="2" />
-                  <rect className="statistics-assist-bar" x={center + 3} y={bottom - assistHeight} width="12" height={assistHeight} rx="2" />
-                  {row.goals > 0 && <text className="statistics-goal-value" x={center - 9} y={bottom - goalHeight - 4}>{row.goals}</text>}
-                  {row.assists > 0 && <text className="statistics-assist-value" x={center + 9} y={bottom - assistHeight - 4}>{row.assists}</text>}
-                  <text x={center} y="105">{row.player_name.split(' ')[0]}</text>
-                </g>
-              );
-            })}
-          </svg>
+          <div className="statistics-chart-scroll">
+            <svg viewBox={`0 0 ${chartWidth} 120`} role="img" aria-label="Gol va assist taqqoslash" style={{ width: `${chartWidth}px` }}>
+              {[0, 1, 2, 3].map((item) => {
+                const y = 16 + item * 24;
+                const label = Math.round(maxValue - (maxValue / 3) * item);
+                return <g key={item}><line x1={left} x2={right} y1={y} y2={y} /><text x="4" y={y + 3}>{label}</text></g>;
+              })}
+              {rows.map((row, index) => {
+                const center = left + width * index + width / 2;
+                const goalHeight = barHeight(row.goals);
+                const assistHeight = barHeight(row.assists);
+                return (
+                  <g key={row.player_id}>
+                    <rect className="statistics-goal-bar" x={center - 15} y={bottom - goalHeight} width="12" height={goalHeight} rx="2" />
+                    <rect className="statistics-assist-bar" x={center + 3} y={bottom - assistHeight} width="12" height={assistHeight} rx="2" />
+                    {row.goals > 0 && <text className="statistics-goal-value" x={center - 9} y={bottom - goalHeight - 4}>{row.goals}</text>}
+                    {row.assists > 0 && <text className="statistics-assist-value" x={center + 9} y={bottom - assistHeight - 4}>{row.assists}</text>}
+                    <text x={center} y="105">{row.player_name.split(' ')[0]}</text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
           <p className="statistics-legend"><i className="green" /> Gol <i className="yellow" /> Assist</p>
         </>
       ) : (
