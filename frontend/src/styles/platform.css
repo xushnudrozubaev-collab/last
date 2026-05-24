@@ -4028,7 +4028,7 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
 
 .statistics-chart-card svg text {
   fill: #a3a39b;
-  font-size: 7px;
+  font-size: 10px;
   font-weight: 750;
   text-anchor: middle;
 }

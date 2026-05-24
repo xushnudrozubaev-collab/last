@@ -3034,11 +3034,13 @@ function StatisticsAttendanceChart({ rows }: { rows: AttendanceTrendPoint[] }) {
 function StatisticsGoalsChart({ rows }: { rows: GoalAssistPoint[] }) {
   const maxValue = Math.max(1, ...rows.flatMap((row) => [row.goals, row.assists]));
   const chartWidth = Math.max(300, rows.length * 58 + 42);
+  const chartHeight = 210;
   const left = 28;
   const right = chartWidth - 14;
-  const bottom = 88;
+  const top = 28;
+  const bottom = 164;
   const width = rows.length ? (right - left) / rows.length : 0;
-  const barHeight = (value: number) => (value / maxValue) * 64;
+  const barHeight = (value: number) => (value / maxValue) * 112;
 
   return (
     <section className="card statistics-chart-card">
@@ -3046,11 +3048,11 @@ function StatisticsGoalsChart({ rows }: { rows: GoalAssistPoint[] }) {
       {rows.length ? (
         <>
           <div className="statistics-chart-scroll">
-            <svg viewBox={`0 0 ${chartWidth} 120`} role="img" aria-label="Gol va assist taqqoslash" style={{ width: `${chartWidth}px` }}>
+            <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-label="Gol va assist taqqoslash" style={{ width: `${chartWidth}px` }}>
               {[0, 1, 2, 3].map((item) => {
-                const y = 16 + item * 24;
+                const y = top + ((bottom - top) / 3) * item;
                 const label = Math.round(maxValue - (maxValue / 3) * item);
-                return <g key={item}><line x1={left} x2={right} y1={y} y2={y} /><text x="4" y={y + 3}>{label}</text></g>;
+                return <g key={item}><line x1={left} x2={right} y1={y} y2={y} /><text x="6" y={y + 3}>{label}</text></g>;
               })}
               {rows.map((row, index) => {
                 const center = left + width * index + width / 2;
@@ -3058,11 +3060,11 @@ function StatisticsGoalsChart({ rows }: { rows: GoalAssistPoint[] }) {
                 const assistHeight = barHeight(row.assists);
                 return (
                   <g key={row.player_id}>
-                    <rect className="statistics-goal-bar" x={center - 15} y={bottom - goalHeight} width="12" height={goalHeight} rx="2" />
-                    <rect className="statistics-assist-bar" x={center + 3} y={bottom - assistHeight} width="12" height={assistHeight} rx="2" />
-                    {row.goals > 0 && <text className="statistics-goal-value" x={center - 9} y={bottom - goalHeight - 4}>{row.goals}</text>}
-                    {row.assists > 0 && <text className="statistics-assist-value" x={center + 9} y={bottom - assistHeight - 4}>{row.assists}</text>}
-                    <text x={center} y="105">{row.player_name.split(' ')[0]}</text>
+                    <rect className="statistics-goal-bar" x={center - 16} y={bottom - goalHeight} width="13" height={goalHeight} rx="3" />
+                    <rect className="statistics-assist-bar" x={center + 4} y={bottom - assistHeight} width="13" height={assistHeight} rx="3" />
+                    {row.goals > 0 && <text className="statistics-goal-value" x={center - 9.5} y={bottom - goalHeight - 7}>{row.goals}</text>}
+                    {row.assists > 0 && <text className="statistics-assist-value" x={center + 10.5} y={bottom - assistHeight - 7}>{row.assists}</text>}
+                    <text x={center} y="194">{row.player_name.split(' ')[0]}</text>
                   </g>
                 );
               })}
