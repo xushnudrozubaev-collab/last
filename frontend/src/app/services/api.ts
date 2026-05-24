@@ -334,11 +334,45 @@ api.interceptors.request.use((config) => {
 });
 
 let redirecting = false;
+let refreshRequest: Promise<string> | null = null;
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401 && !redirecting && !String(error.config?.url || '').includes('/auth/login/')) {
+  async (error) => {
+    const originalRequest = error.config;
+    const requestUrl = String(originalRequest?.url || '');
+    const canRefresh =
+      error.response?.status === 401
+      && originalRequest
+      && !originalRequest._retry
+      && !requestUrl.includes('/auth/login/')
+      && !requestUrl.includes('/auth/refresh/')
+      && tokenStore.getRefresh();
+
+    if (canRefresh) {
+      originalRequest._retry = true;
+      try {
+        if (!refreshRequest) {
+          refreshRequest = axios
+            .post<{ access: string }>(`${API_BASE_URL}/auth/refresh/`, { refresh: tokenStore.getRefresh() })
+            .then((response) => response.data.access)
+            .finally(() => {
+              refreshRequest = null;
+            });
+        }
+        const access = await refreshRequest;
+        const refresh = tokenStore.getRefresh();
+        if (!refresh) throw new Error('Refresh token topilmadi.');
+        tokenStore.set(access, refresh);
+        originalRequest.headers = originalRequest.headers || {};
+        originalRequest.headers.Authorization = `Bearer ${access}`;
+        return api(originalRequest);
+      } catch {
+        tokenStore.clear();
+      }
+    }
+
+    if (error.response?.status === 401 && !redirecting && !requestUrl.includes('/auth/login/')) {
       redirecting = true;
       tokenStore.clear();
       window.dispatchEvent(new Event('auth:logout'));
