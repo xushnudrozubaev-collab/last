@@ -2862,7 +2862,7 @@ function MatchDetailPage() {
   return (
     <Layout>
       <PageHeader
-        title={<span className="match-detail-title"><button className="button ghost" onClick={() => navigate('/oyinlar')}><ArrowLeft size={16} /> Orqaga</button> O'yin tafsiloti</span>}
+        title={<span className="match-detail-title"><button className="button ghost match-back-button" onClick={() => navigate('/oyinlar')}><ArrowLeft size={15} /> Orqaga</button> <span>O'yin tafsiloti</span></span>}
         action={<button className="button ghost" onClick={() => setEditing(true)}><Edit size={17} /> Tahrirlash</button>}
       />
 

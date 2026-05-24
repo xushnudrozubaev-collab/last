@@ -3189,6 +3189,20 @@ html[data-theme='light'] .dashboard-recent-card,
   gap: 14px;
 }
 
+.match-detail-title {
+  gap: 12px;
+  font-size: 28px;
+  line-height: 1.12;
+}
+
+.match-back-button {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 1;
+}
+
 .matches-page-title svg {
   color: #2563eb;
 }
@@ -3770,20 +3784,21 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
   display: grid;
   grid-template-columns: minmax(180px, 1fr) auto minmax(180px, 1fr);
   align-items: center;
-  gap: 22px;
+  gap: 18px;
   margin-bottom: 18px;
+  padding-block: 18px 16px;
 }
 
 .match-team,
 .match-scoreboard {
   display: grid;
   justify-items: center;
-  gap: 9px;
+  gap: 7px;
   text-align: center;
 }
 
 .match-team strong {
-  font-size: 20px;
+  font-size: 18px;
   color: #111827;
 }
 
@@ -3794,7 +3809,7 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
 
 .match-scoreboard strong {
   color: #111827;
-  font-size: 42px;
+  font-size: 34px;
   line-height: 1;
   font-weight: 900;
 }
@@ -3805,7 +3820,7 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
   justify-content: center;
   flex-wrap: wrap;
   gap: 12px 22px;
-  padding-top: 18px;
+  padding-top: 14px;
   border-top: 1px solid #e2e8f0;
   color: #64748b;
 }
