@@ -2287,6 +2287,13 @@ html[data-theme='light'] .position-goalkeeper {
   display: none;
 }
 
+.floating-menu-toggle {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 40;
+}
+
 @media (max-width: 1180px) {
   .grid-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));

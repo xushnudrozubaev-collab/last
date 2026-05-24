@@ -10,7 +10,6 @@ import {
   FileText,
   Settings,
 } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,7 +17,6 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const [open, setOpen] = useState(false);
-  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -64,18 +62,9 @@ export function Layout({ children }: LayoutProps) {
         </nav>
       </aside>
       <div className="main-panel">
-        <header className="topbar">
-          <button className="button icon ghost menu-toggle" onClick={() => setOpen((value) => !value)} aria-label="Menyuni ochish">
-            <Menu size={20} />
-          </button>
-          <div style={{ flex: 1 }} />
-          <div className="profile-row">
-            <div style={{ textAlign: 'right' }}>
-              <div className="small">{user?.full_name || user?.username}</div>
-              <div className="small muted">{user?.role || 'Murabbiy'}</div>
-            </div>
-          </div>
-        </header>
+        <button className="button icon ghost menu-toggle floating-menu-toggle" onClick={() => setOpen((value) => !value)} aria-label="Menyuni ochish">
+          <Menu size={20} />
+        </button>
         <main className="page-content">{children}</main>
       </div>
     </div>
