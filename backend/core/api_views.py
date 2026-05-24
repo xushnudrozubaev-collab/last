@@ -488,7 +488,7 @@ class DashboardAPIView(APIView):
         team_stats = calculate_team_attendance_stats()
         today = date.today()
         if period == "week":
-            start_date = today - timedelta(days=today.weekday())
+            start_date = today - timedelta(days=6)
             previous_start = start_date - timedelta(days=7)
         elif period == "season":
             start_date = date(today.year if today.month >= 8 else today.year - 1, 8, 1)
@@ -568,6 +568,18 @@ class DashboardAPIView(APIView):
             .exclude(home_score__isnull=True)
             .exclude(away_score__isnull=True)
             .order_by("-match_date", "-match_time")[:10]
+        )
+        period_completed_matches = (
+            project_club_matches(
+                Match.objects.filter(
+                    status=Match.STATUS_PLAYED,
+                    match_date__gte=start_date,
+                    match_date__lte=today,
+                )
+            )
+            .exclude(home_score__isnull=True)
+            .exclude(away_score__isnull=True)
+            .order_by("-match_date", "-match_time")[:100]
         )
         injured_records = (
             TrainingAttendance.objects.filter(
@@ -688,6 +700,7 @@ class DashboardAPIView(APIView):
             "recent_trainings": TrainingSerializer(recent_trainings, many=True, context={"request": request}).data,
             "recent_matches": MatchSerializer(recent_matches, many=True, context={"request": request}).data,
             "recent_completed_matches": MatchSerializer(recent_completed_matches, many=True, context={"request": request}).data,
+            "period_completed_matches": MatchSerializer(period_completed_matches, many=True, context={"request": request}).data,
             "injured_players": [
                 {
                     "player_id": record.player_id,

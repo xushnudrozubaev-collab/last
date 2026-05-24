@@ -171,6 +171,7 @@ export type DashboardData = {
   recent_trainings: Training[];
   recent_matches: Match[];
   recent_completed_matches?: Match[];
+  period_completed_matches?: Match[];
   injured_players: Array<{
     player_id: number;
     player_name: string;

@@ -836,7 +836,11 @@ function PremiumDashboardPage() {
     { value: 'month', label: 'Bu oy' },
     { value: 'season', label: 'Bu mavsum' },
   ];
-  const completedMatches = data.recent_completed_matches?.length ? data.recent_completed_matches : data.recent_matches;
+  const completedMatches = data.period_completed_matches?.length
+    ? data.period_completed_matches
+    : data.recent_completed_matches?.length
+      ? data.recent_completed_matches
+      : data.recent_matches;
   const matchAnalytics = buildPremiumMatchAnalytics(completedMatches, periodStats?.match_record);
   const attendanceSeries = buildPremiumAttendanceSeries(data.recent_trainings);
   const workloadSeries = buildPremiumWorkloadSeries(data.recent_trainings);
