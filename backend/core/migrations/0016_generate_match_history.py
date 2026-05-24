@@ -84,7 +84,7 @@ def build_match(index):
         "corners": 2 + (index * 5) % 7,
         "yellow_cards": 1 + index % 4,
         "red_cards": 1 if index % 31 == 0 else 0,
-        "note": "Demo mavsum tarixi uchun avtomatik qo'shilgan yakunlangan o'yin.",
+        "note": "Mavsum tarixi uchun avtomatik qo'shilgan yakunlangan o'yin.",
     }
 
 
@@ -103,7 +103,7 @@ def generate_match_history(apps, schema_editor):
 
 def remove_match_history(apps, schema_editor):
     Match = apps.get_model("core", "Match")
-    notes = "Demo mavsum tarixi uchun avtomatik qo'shilgan yakunlangan o'yin."
+    notes = "Mavsum tarixi uchun avtomatik qo'shilgan yakunlangan o'yin."
     Match.objects.filter(note=notes).delete()
 
 

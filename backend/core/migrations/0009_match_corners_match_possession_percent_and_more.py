@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0008_populate_demo_player_stats'),
+        ('core', '0008_populate_player_stats'),
     ]
 
     operations = [

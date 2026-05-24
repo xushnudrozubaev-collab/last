@@ -45,7 +45,7 @@ def generate_training_history(apps, schema_editor):
                 "start_time": start_time,
                 "end_time": end_time,
                 "location": "Bunyodkor akademiyasi",
-                "note": "Demo davr grafiklari uchun avtomatik mashg'ulot.",
+                "note": "Davr grafiklari uchun avtomatik mashg'ulot.",
                 "attendance_total": len(players),
                 "attendance_present": 0,
             },
@@ -75,7 +75,7 @@ def generate_training_history(apps, schema_editor):
                     "sleep_quality": 6 + (player_index + index) % 4,
                     "activity_score": 1 if absent else activity_score,
                     "injury_status": INJURY_NO,
-                    "coach_note": "Demo mashg'ulot baholash yozuvi.",
+                    "coach_note": "Mashg'ulot baholash yozuvi.",
                 },
             )
         training.attendance_present = present_count
@@ -84,7 +84,7 @@ def generate_training_history(apps, schema_editor):
 
 def remove_training_history(apps, schema_editor):
     Training = apps.get_model("core", "Training")
-    Training.objects.filter(note="Demo davr grafiklari uchun avtomatik mashg'ulot.").delete()
+    Training.objects.filter(note="Davr grafiklari uchun avtomatik mashg'ulot.").delete()
 
 
 class Migration(migrations.Migration):

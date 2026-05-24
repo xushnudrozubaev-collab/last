@@ -387,7 +387,7 @@ Frontend sahifalari va funksiyalari:
   - red_cards.
   - note.
 - CRUD API bilan ishlasin.
-- O'yinlar hech qayerda yo'qolib qolmasin; local DB seed yoki fixture orqali demo o'yinlar tiklanadigan bo'lsin.
+- O'yinlar hech qayerda yo'qolib qolmasin; local DB seed yoki fixture orqali namuna o'yinlar tiklanadigan bo'lsin.
 
 9. O'yin detail sahifasi:
 - Match header: jamoalar, sana, stadion, status.
@@ -470,16 +470,16 @@ Dizayn talablari:
 - Ko'rinadigan UI matnlari o'zbek tilida bo'lsin.
 
 Data va seed:
-- Local ishlaganda demo admin user yaratiladigan management command bo'lsin:
+- Local ishlaganda namuna admin user yaratiladigan management command bo'lsin:
   - username: `admin`
   - password: `admin12345`
-- Demo data fixture yoki seed command bo'lsin:
+- Namuna data fixture yoki seed command bo'lsin:
   - 11 futbolchi.
   - kamida 3 mashg'ulot.
   - barcha futbolchilar uchun attendance records.
   - kamida 10-15 o'yin.
   - player statistics.
-- Demo data qayta ishga tushganda duplicate ko'payib ketmasin.
+- Namuna data qayta ishga tushganda duplicate ko'payib ketmasin.
 
 start-dev.ps1 talablari:
 - Rootdan ishga tushsin.
@@ -487,7 +487,7 @@ start-dev.ps1 talablari:
 - Backend requirements o'rnatsin.
 - Frontend `node_modules` yo'q bo'lsa `npm install` qilsin.
 - Django migrate bajarsin.
-- Demo admin va demo data commandlarini xavfsiz ishga tushirsin.
+- Namuna admin va namuna data commandlarini xavfsiz ishga tushirsin.
 - 8000 va 5173 portlarda eski process bo'lsa to'xtatsin.
 - Backendni hidden process qilib `127.0.0.1:8000` da ishga tushirsin.
 - Frontendni `127.0.0.1:5173` da ishga tushirsin.
@@ -546,7 +546,7 @@ Muhim cheklovlar:
 - Mavjud palapartish kodni yamash o'rniga toza, izchil loyiha holatiga keltir.
 - Bitta loyiha ichida ikki xil frontend yoki ikki xil dashboard qoldirma.
 - Django template UI yaratma.
-- Hardcoded fake dashboard ma'lumotlaridan qoch; demo data backend seed orqali bo'lsin.
+- Hardcoded fake dashboard ma'lumotlaridan qoch; namuna data backend seed orqali bo'lsin.
 - Foydalanuvchi uchun asosiy tajriba React SPA bo'lsin.
 - UI professional ko'rinsin, lekin ortiqcha grafik va bezaklar bilan to'ldirilmasin.
 - Har bir CRUD real API bilan ishlasin.

@@ -30,7 +30,7 @@ TRAININGS = [
 ]
 
 
-def populate_demo_player_stats(apps, schema_editor):
+def populate_player_stats(apps, schema_editor):
     Player = apps.get_model("core", "Player")
     PlayerStatistic = apps.get_model("core", "PlayerStatistic")
     Training = apps.get_model("core", "Training")
@@ -63,7 +63,7 @@ def populate_demo_player_stats(apps, schema_editor):
                 "location": location,
                 "attendance_total": Player.objects.count(),
                 "attendance_present": Player.objects.count(),
-                "note": "Demo statistikalar uchun avtomatik mashg'ulot.",
+                "note": "Statistikalar uchun avtomatik mashg'ulot.",
             },
         )
         trainings.append(training)
@@ -100,7 +100,7 @@ def populate_demo_player_stats(apps, schema_editor):
                     "injury_status": INJURY_RECOVERING
                     if (player_index + training_index) % 13 == 0
                     else INJURY_NO,
-                    "coach_note": "Demo baholash: forma va ishtirok ko'rsatkichlari to'ldirilgan.",
+                    "coach_note": "Baholash: forma va ishtirok ko'rsatkichlari to'ldirilgan.",
                 },
             )
         training.attendance_total = len(players)
@@ -115,5 +115,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(populate_demo_player_stats, migrations.RunPython.noop),
+        migrations.RunPython(populate_player_stats, migrations.RunPython.noop),
     ]
