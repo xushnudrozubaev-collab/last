@@ -49,6 +49,10 @@ export type Player = {
   };
 };
 
+export type PlayerPayload = Partial<Player> & {
+  photo?: File | null;
+};
+
 export type Training = {
   id: number;
   title: string;
@@ -379,6 +383,36 @@ function unwrap<T>(response: { data: ApiEnvelope<T> }): T {
   return response.data.data;
 }
 
+function playerPayloadToFormData(data: PlayerPayload) {
+  const formData = new FormData();
+  const writableFields: Array<keyof PlayerPayload> = [
+    'full_name',
+    'shirt_number',
+    'position',
+    'age',
+    'nationality',
+    'height',
+    'weight',
+    'join_date',
+    'short_note',
+    'photo',
+  ];
+
+  writableFields.forEach((field) => {
+    const value = data[field];
+    if (value === undefined || value === null) return;
+    if (field === 'photo') {
+      if (value instanceof File) {
+        formData.append(field, value);
+      }
+      return;
+    }
+    formData.append(field, String(value));
+  });
+
+  return formData;
+}
+
 export const authAPI = {
   async login(username: string, password: string) {
     const response = await api.post<{ access: string; refresh: string; user: User }>('/auth/login/', { username, password });
@@ -418,12 +452,16 @@ export const playersAPI = {
   async profile(id: number) {
     return unwrap<PlayerProfile>(await api.get<ApiEnvelope<PlayerProfile>>(`/players/${id}/profile/`));
   },
-  async create(data: Partial<Player>) {
-    const response = await api.post<Player>('/players/', data);
+  async create(data: PlayerPayload) {
+    const response = await api.post<Player>('/players/', playerPayloadToFormData(data), {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   },
-  async update(id: number, data: Partial<Player>) {
-    const response = await api.patch<Player>(`/players/${id}/`, data);
+  async update(id: number, data: PlayerPayload) {
+    const response = await api.patch<Player>(`/players/${id}/`, playerPayloadToFormData(data), {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   },
   async remove(id: number) {

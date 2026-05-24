@@ -38,7 +38,7 @@ Script quyidagilarni qiladi:
 
 `127.0.0.1:8000` Django API va admin uchun.
 
-`127.0.0.1:5173` yangi asosiy React sayt.
+`127.0.0.1:5173` Asosiy React sayt.
 
 Frontend API manzili default:
 

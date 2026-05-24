@@ -1,0 +1,553 @@
+Maqsad: mavjud aralashib ketgan loyihani noldan tartibli, bitta buyruq bilan ishlaydigan full-stack Django + React platformaga aylantir.
+
+Loyiha nomi: Futbol murabbiylari platformasi / Murabbiy kundaligi.
+
+Asosiy natija:
+- `.\start-dev.ps1` buyrug'i bilan backend va frontend birga ishga tushsin.
+- Frontend asosiy manzil: `http://127.0.0.1:5173`
+- Backend API manzil: `http://127.0.0.1:8000/api`
+- Django admin: `http://127.0.0.1:8000/admin`
+- Loyiha bitta mahsulot bo'lsin, 2 xil sayt yoki 2 xil UI bo'lib qolmasin.
+- `127.0.0.1:8000` faqat API/admin/health uchun ishlasin, asosiy UI faqat React SPA bo'lsin.
+
+Kerakli texnologiyalar:
+- Backend: Python, Django, Django REST Framework, SimpleJWT, django-cors-headers, Pillow.
+- Local database: SQLite.
+- Production uchun tayyorlik: PostgreSQL uchun `DATABASE_URL` qo'llab-quvvatlansin.
+- Frontend: React + Vite + TypeScript.
+- Router: React Router.
+- HTTP client: Axios.
+- Icons: lucide-react.
+- Styling: bitta tartibli CSS tizimi yoki component-level CSS; eski keraksiz Figma/shadcn/UI dump fayllarini saqlama.
+
+Root arxitekturasi:
+- `backend/`
+- `frontend/`
+- `start-dev.ps1`
+- `README.md`
+- `.gitignore`
+- `.env.example`
+
+Backend arxitekturasi:
+- `backend/manage.py`
+- `backend/config/` yoki `backend/coach_platform/` ichida Django settings, urls, wsgi, asgi.
+- `backend/core/` ichida models, serializers, views, urls, admin, services.
+- Django template UI yaratma.
+- Backend faqat REST API, admin va health endpoint bersin.
+- Static/media sozlamalari to'g'ri bo'lsin.
+- CORS `http://127.0.0.1:5173` uchun ochiq bo'lsin.
+- JWT auth ishlasin.
+- API response formati iloji boricha bir xil bo'lsin: `{ success, message, data }`.
+- ViewSet default DRF list/detail/create/update/delete endpointlari ishlasin.
+
+Frontend arxitekturasi:
+- `frontend/src/main.tsx`
+- `frontend/src/app/App.tsx` faqat route provider va yuqori darajadagi app composition uchun ishlatilsin.
+- Sahifalar alohida fayllarga bo'linsin:
+  - `pages/AuthPage.tsx`
+  - `pages/DashboardPage.tsx`
+  - `pages/PlayersPage.tsx`
+  - `pages/PlayerDetailPage.tsx`
+  - `pages/TrainingsPage.tsx`
+  - `pages/TrainingDetailPage.tsx`
+  - `pages/MatchesPage.tsx`
+  - `pages/MatchDetailPage.tsx`
+  - `pages/StatisticsPage.tsx`
+  - `pages/ReportsPage.tsx`
+  - `pages/SettingsPage.tsx`
+- Shared components alohida bo'lsin:
+  - `components/layout/Layout.tsx`
+  - `components/ui/Button.tsx`
+  - `components/ui/Modal.tsx`
+  - `components/ui/ConfirmModal.tsx`
+  - `components/ui/StatCard.tsx`
+  - `components/ui/EmptyState.tsx`
+  - `components/ui/LoadingState.tsx`
+  - `components/ui/ErrorState.tsx`
+  - `components/ui/FormField.tsx`
+  - `components/ui/Progress.tsx`
+- API client alohida bo'lsin:
+  - `services/api.ts`
+  - `services/auth.ts`
+  - `services/players.ts`
+  - `services/trainings.ts`
+  - `services/matches.ts`
+  - `services/dashboard.ts`
+  - `services/statistics.ts`
+  - `services/reports.ts`
+  - `services/settings.ts`
+- TypeScript typelar `types/` ichida yoki API service fayllarida tartibli saqlansin.
+- Bitta dizayn tizimi ishlatilsin; eski ikki xil UI ko'rinishi aralashmasin.
+
+Ma'lumot modeli:
+
+1. CoachProfile:
+- user OneToOne.
+- full_name.
+- role default `Bosh murabbiy`.
+- phone.
+- club_name.
+- experience_years.
+- bio.
+
+2. UserProfile:
+- user OneToOne.
+- language: `uz`, `ru`, `en`.
+- theme: `light`, `dark`.
+- phone.
+- avatar optional.
+- email_notifications.
+- sms_notifications.
+- system_alerts.
+
+3. Player:
+- full_name.
+- shirt_number.
+- position: `goalkeeper`, `defender`, `midfielder`, `forward`.
+- age.
+- nationality.
+- height.
+- weight.
+- join_date.
+- photo optional.
+- short_note.
+- computed fields in API: position_display, photo_url, attendance_percent, average_rating, training_count, absent_count, late_count, last_training_status, game_statistics.
+
+4. Training:
+- title.
+- training_type: `tactics`, `fitness`, `recovery`, `technical`.
+- training_date.
+- start_time.
+- end_time.
+- location.
+- note.
+- attendance_total readonly.
+- attendance_present readonly.
+- computed fields: duration_minutes, duration_display, attendance_percent, attendance_display, average_rating, marked_count.
+
+5. TrainingAttendance:
+- training ForeignKey.
+- player ForeignKey.
+- unique constraint: one player per one training.
+- attendance_status: `Qatnashdi`, `Qatnashmadi`.
+- physical_condition: `excellent`, `good`, `average`, `tired`, `injured`.
+- activity_level: `low`, `medium`, `high`.
+- discipline: `good`, `warning`, `problem`.
+- rating 1-10.
+- attended_minutes.
+- training_duration_minutes.
+- fatigue_level 1-10.
+- pain_level 1-10.
+- sleep_quality 1-10.
+- activity_score 1-10.
+- heart_rate optional 30-240.
+- blood_pressure optional.
+- body_temperature optional.
+- measured_weight optional.
+- measured_height optional.
+- oxygen_saturation optional 50-100.
+- respiratory_rate optional 5-80.
+- injury_status: `Yo'q`, `Bor`, `Tiklanmoqda`.
+- injury_note.
+- coach_note.
+- computed field: participation_percent.
+- Agar attendance_status `Qatnashmadi` bo'lsa attended_minutes 0 bo'lsin va sog'liq/metrikalar xavfsiz defaultga tushsin.
+- Training saqlanganda yoki attendance o'zgarganda attendance_total va attendance_present avtomatik yangilansin.
+
+6. Match:
+- home_team.
+- away_team.
+- home_logo_url optional.
+- away_logo_url optional.
+- match_date.
+- match_time.
+- stadium.
+- status: `upcoming`, `live`, `played`.
+- home_score optional.
+- away_score optional.
+- attendance optional.
+- referee optional.
+- possession_percent 0-100.
+- shots.
+- shots_on_target.
+- corners.
+- yellow_cards.
+- red_cards.
+- note.
+- computed: status_display, result_label.
+
+7. PlayerStatistic:
+- player ForeignKey.
+- matches_played.
+- goals.
+- assists.
+- rating.
+
+Backend API endpointlari:
+- `POST /api/auth/login/`
+- `POST /api/auth/refresh/`
+- `POST /api/auth/register/`
+- `GET /api/auth/me/`
+- `GET/PATCH /api/settings/`
+- `POST /api/settings/password/`
+- `GET /api/choices/`
+- `GET /api/dashboard/`
+- `GET /api/statistics/`
+- `GET /api/reports/`
+- `GET /api/reports/print/`
+- `GET/POST /api/players/`
+- `GET/PATCH/DELETE /api/players/:id/`
+- `GET /api/players/:id/profile/`
+- `GET/POST /api/trainings/`
+- `GET/PATCH/DELETE /api/trainings/:id/`
+- `GET/POST /api/trainings/:id/attendance/`
+- `GET/POST /api/attendance/`
+- `GET/PATCH/DELETE /api/attendance/:id/`
+- `GET/POST /api/matches/`
+- `GET/PATCH/DELETE /api/matches/:id/`
+
+Authentication:
+- Login sahifasi username/password bilan ishlasin.
+- Access va refresh token localStorage da saqlansin.
+- 401 bo'lsa tokenlar tozalansin va login sahifasiga qaytarilsin.
+- Register endpoint bo'lsin, lekin UI da ko'rsatish shart emas.
+- Protected routes auth bo'lmasa `/kirish` ga yuborsin.
+- Logout tugmasi ishlasin.
+
+Frontend sahifalari va funksiyalari:
+
+1. Login sahifasi:
+- Markaziy login card.
+- Sarlavha: `Futbol murabbiylari platformasi`.
+- Username va password input.
+- Xato bo'lsa toast yoki alert ko'rsatsin.
+- Login muvaffaqiyatli bo'lsa dashboardga o'tsin.
+
+2. Layout:
+- Chap sidebar doimiy.
+- Brand: `Murabbiy kundaligi`.
+- Menu:
+  - Boshqaruv paneli `/`
+  - Futbolchilar `/futbolchilar`
+  - Mashg'ulotlar `/mashgulotlar`
+  - O'yinlar `/oyinlar`
+  - Statistika `/statistika`
+  - Hisobotlar `/hisobotlar`
+  - Sozlamalar `/sozlamalar`
+- Topbar:
+  - username.
+  - role.
+  - logout icon button.
+- Responsive mobile sidebar bo'lsin.
+- Light theme asosiy bo'lsin; dark theme majburiy emas, lekin Settings theme qiymatini buzma.
+
+3. Dashboard:
+- Faqat kerakli real ma'lumotlar ko'rsatilsin.
+- Yuqorida KPI cardlar:
+  - Jami futbolchilar.
+  - Mashg'ulotlar.
+  - Gol va assist.
+  - O'rtacha davomad.
+  - O'rtacha faollik.
+  - Bugungi davomad.
+  - Eng faol futbolchi.
+  - Jarohat cheklovi.
+- Katta keraksiz grafik bloklar bo'lmasin.
+- Pastda real ro'yxatlar:
+  - Oxirgi mashg'ulotlar.
+  - Oxirgi o'yinlar.
+  - Ogohlantirishlar.
+  - Jarohat nazorati.
+- Dashboard ma'lumotlari backenddan olinishi kerak; hardcoded fake cardlar bo'lmasin.
+
+4. Futbolchilar sahifasi:
+- Search input.
+- Position filter.
+- Futbolchi qo'shish tugmasi.
+- Jadval yoki professional list:
+  - rasm/avatar.
+  - forma raqami.
+  - ism.
+  - pozitsiya.
+  - yosh.
+  - millat.
+  - davomad.
+  - o'rtacha baho.
+  - amallar: batafsil, tahrirlash, o'chirish.
+- Create/Edit modal:
+  - full_name.
+  - shirt_number.
+  - position.
+  - age.
+  - nationality.
+  - height.
+  - weight.
+  - join_date.
+  - short_note.
+- Delete confirm modal.
+- API bilan CRUD to'liq ishlasin.
+
+5. Futbolchi detail sahifasi:
+- Futbolchi profile header.
+- Stat cards:
+  - qatnashuv foizi.
+  - o'rtacha baho.
+  - mashg'ulot tarixi.
+  - kelmaganlar.
+  - o'yin statistikasi: match, goal, assist, rating.
+- Training history jadvali.
+- So'nggi murabbiy izohlari.
+- Progress ko'rinishi oddiy, tushunarli bo'lsin; keraksiz murakkab chart shart emas.
+
+6. Mashg'ulotlar sahifasi:
+- Search.
+- Training type filter.
+- Date filter.
+- Qo'shish tugmasi.
+- Jadval:
+  - nom.
+  - sana.
+  - vaqt.
+  - turi.
+  - joy.
+  - qatnashuv.
+  - baho.
+  - amallar: detail, edit, delete.
+- Create/Edit modal:
+  - title.
+  - training_type.
+  - training_date.
+  - start_time.
+  - end_time.
+  - location.
+  - note.
+- CRUD API bilan ishlasin.
+
+7. Mashg'ulot detail / davomad sahifasi:
+- Mashg'ulot summary.
+- Har bir futbolchi uchun attendance row.
+- Default row backenddan kelishi kerak: agar hali attendance yozilmagan bo'lsa ham barcha futbolchilar chiqsin.
+- Tez tahrirlash:
+  - attendance_status.
+  - physical_condition.
+  - activity_level.
+  - discipline.
+  - rating.
+  - injury_status.
+  - coach_note.
+- Batafsil modal:
+  - fatigue_level.
+  - pain_level.
+  - sleep_quality.
+  - activity_score.
+  - heart_rate.
+  - blood_pressure.
+  - body_temperature.
+  - measured_weight.
+  - measured_height.
+  - oxygen_saturation.
+  - respiratory_rate.
+  - injury_note.
+  - attended_minutes.
+- `Saqlash` tugmasi barcha recordsni `POST /api/trainings/:id/attendance/` ga yuborsin.
+- Saqlagandan keyin attendance qayta yuklansin.
+
+8. O'yinlar sahifasi:
+- Search.
+- Status filter.
+- Date filter.
+- Qo'shish tugmasi.
+- Jadval:
+  - home_team vs away_team.
+  - sana.
+  - vaqt.
+  - stadion.
+  - status.
+  - hisob.
+  - natija.
+  - amallar: detail, edit, delete.
+- Create/Edit modal:
+  - home_team.
+  - away_team.
+  - home_logo_url.
+  - away_logo_url.
+  - match_date.
+  - match_time.
+  - stadium.
+  - status.
+  - home_score.
+  - away_score.
+  - attendance.
+  - referee.
+  - possession_percent.
+  - shots.
+  - shots_on_target.
+  - corners.
+  - yellow_cards.
+  - red_cards.
+  - note.
+- CRUD API bilan ishlasin.
+- O'yinlar hech qayerda yo'qolib qolmasin; local DB seed yoki fixture orqali demo o'yinlar tiklanadigan bo'lsin.
+
+9. O'yin detail sahifasi:
+- Match header: jamoalar, sana, stadion, status.
+- Scoreboard.
+- Stat cards:
+  - possession.
+  - shots.
+  - shots on target.
+  - corners.
+  - yellow/red cards.
+  - referee.
+  - attendance.
+- Note bo'lsa ko'rsatilsin.
+
+10. Statistika sahifasi:
+- Backend `/api/statistics/` dan real data olsin.
+- Team stat cards:
+  - total_trainings.
+  - total_records.
+  - average_attendance_percent.
+  - average_activity_score.
+  - average_rating.
+  - today_attendance_percent.
+  - injury_related_count.
+- Player rankings:
+  - Eng faol futbolchilar.
+  - Eng ko'p kelmaganlar.
+- Injury monitoring list.
+- Match stats:
+  - total, wins, draws, losses, win_percent, goals_for, goals_against, goal_difference.
+- Training type analysis:
+  - type label.
+  - trainings_count.
+  - attendance_percent.
+  - average_rating.
+
+11. Hisobotlar sahifasi:
+- Report type select:
+  - player.
+  - training.
+  - month.
+- Player report uchun player select.
+- Training report uchun training select.
+- Month report uchun month input.
+- Generate tugmasi.
+- Report summary cards.
+- Report table.
+- Print tugmasi `/api/reports/print/` endpointni yangi oynada ochsin yoki browser printni chaqirsin.
+
+12. Sozlamalar sahifasi:
+- User profile form:
+  - first_name.
+  - last_name.
+  - email.
+  - phone.
+  - club_name.
+  - role.
+  - language.
+  - theme.
+  - email_notifications.
+  - sms_notifications.
+  - system_alerts.
+- Save settings `PATCH /api/settings/`.
+- Change password form:
+  - current_password.
+  - new_password.
+  - confirm_new_password frontend validation.
+  - `POST /api/settings/password/`.
+
+Dizayn talablari:
+- Eski ikki xil dashboard dizaynini aralashtirma.
+- Bitta professional, sokin, operational dashboard uslubi bo'lsin.
+- Sidebar quyuq navy, content ochiq fon bo'lishi mumkin.
+- Cards 8px radius atrofida bo'lsin; juda katta 28px rounded cardlar bo'lmasin.
+- Textlar card ichida sig'sin, juda katta font bo'lmasin.
+- KPI cardlar ixcham, 4 ustun desktop, 2 ustun tablet, 1 ustun mobile bo'lsin.
+- Form, table, modal, filterlar bir xil uslubda bo'lsin.
+- Har bir icon lucide-react dan olinsin.
+- Keraksiz landing page, hero page, marketing section yaratma.
+- Ko'rinadigan UI matnlari o'zbek tilida bo'lsin.
+
+Data va seed:
+- Local ishlaganda demo admin user yaratiladigan management command bo'lsin:
+  - username: `admin`
+  - password: `admin12345`
+- Demo data fixture yoki seed command bo'lsin:
+  - 11 futbolchi.
+  - kamida 3 mashg'ulot.
+  - barcha futbolchilar uchun attendance records.
+  - kamida 10-15 o'yin.
+  - player statistics.
+- Demo data qayta ishga tushganda duplicate ko'payib ketmasin.
+
+start-dev.ps1 talablari:
+- Rootdan ishga tushsin.
+- Backend `.venv` yo'q bo'lsa yaratsin.
+- Backend requirements o'rnatsin.
+- Frontend `node_modules` yo'q bo'lsa `npm install` qilsin.
+- Django migrate bajarsin.
+- Demo admin va demo data commandlarini xavfsiz ishga tushirsin.
+- 8000 va 5173 portlarda eski process bo'lsa to'xtatsin.
+- Backendni hidden process qilib `127.0.0.1:8000` da ishga tushirsin.
+- Frontendni `127.0.0.1:5173` da ishga tushirsin.
+- Yakunda URLlarni va process idlarni chiqarib bersin.
+
+README talablari:
+- Bitta buyruq bilan ishga tushirishni yoz.
+- Login ma'lumotlarini yoz.
+- Backend/frontend papkalarini tushuntir.
+- API manzil va frontend manzilni yoz.
+- Production deploy uchun qisqa eslatma yoz.
+
+Git va fayl tartibi:
+- Keraksiz eski UI, eski Django template, eski build artifact, `dist`, `node_modules`, `.venv`, sqlite backup, log fayllar repositoryga kiritilmasin.
+- `.gitignore` to'g'ri bo'lsin.
+- `frontend/dist` build artifact bo'lsa ignore qilinsin.
+- Katta bitta `App.tsx` ichiga hamma narsani tiqma; maintainable fayllarga bo'l.
+
+Validation va xatoliklar:
+- Backend serializer validation xabarlari o'zbek tilida bo'lsin.
+- Frontend API xatolarni odam tushunadigan toast/alert qilib ko'rsatsin.
+- Loading, empty, error state har bir sahifada bo'lsin.
+- Delete amallar confirm modal bilan bo'lsin.
+- Form submit paytida button disabled/loading bo'lsin.
+
+Hisoblash qoidalari:
+- Attendance active status faqat `Qatnashdi`.
+- attendance_percent = active / total * 100.
+- average_rating faqat active records bo'yicha.
+- participation_percent = attended_minutes / training_duration_minutes * 100.
+- Training duration end_time - start_time, noto'g'ri bo'lsa 90 minut default.
+- Team statistics player stats aggregationdan hisoblansin.
+- Match result:
+  - home_score/away_score yo'q bo'lsa `Rejalashtirilgan`.
+  - home_score > away_score bo'lsa `G'alaba`.
+  - home_score < away_score bo'lsa `Mag'lubiyat`.
+  - teng bo'lsa `Durang`.
+
+Tekshiruv:
+- `backend/.venv/Scripts/python.exe manage.py check` xatosiz o'tsin.
+- `backend/.venv/Scripts/python.exe manage.py migrate --noinput` xatosiz o'tsin.
+- `npm run build` frontendda xatosiz o'tsin.
+- `.\start-dev.ps1` dan keyin:
+  - `http://127.0.0.1:5173` ochilsin.
+  - login ishlasin.
+  - dashboard real data ko'rsatsin.
+  - futbolchi CRUD ishlasin.
+  - mashg'ulot CRUD ishlasin.
+  - mashg'ulot davomadi saqlansin.
+  - o'yin CRUD ishlasin va o'yinlar ro'yxati bo'sh bo'lib qolmasin.
+  - statistika sahifasi backenddan data olib ko'rsatsin.
+  - hisobot generate ishlasin.
+  - sozlamalar saqlansin.
+
+Muhim cheklovlar:
+- Mavjud palapartish kodni yamash o'rniga toza, izchil loyiha holatiga keltir.
+- Bitta loyiha ichida ikki xil frontend yoki ikki xil dashboard qoldirma.
+- Django template UI yaratma.
+- Hardcoded fake dashboard ma'lumotlaridan qoch; demo data backend seed orqali bo'lsin.
+- Foydalanuvchi uchun asosiy tajriba React SPA bo'lsin.
+- UI professional ko'rinsin, lekin ortiqcha grafik va bezaklar bilan to'ldirilmasin.
+- Har bir CRUD real API bilan ishlasin.
+- Ish yakunida barcha test/build/check natijalarini qisqa yoz.
