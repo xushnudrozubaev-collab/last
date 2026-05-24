@@ -169,6 +169,13 @@ export type DashboardData = {
     trainings_count: number;
   } | null;
   recent_trainings: Training[];
+  period_trainings?: Training[];
+  period_active_players?: Array<{
+    player_id: number;
+    full_name: string;
+    score: number;
+    trainings_count: number;
+  }>;
   recent_matches: Match[];
   recent_completed_matches?: Match[];
   period_completed_matches?: Match[];

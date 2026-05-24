@@ -841,11 +841,19 @@ function PremiumDashboardPage() {
     : data.recent_completed_matches?.length
       ? data.recent_completed_matches
       : data.recent_matches;
+  const periodTrainings = data.period_trainings?.length ? data.period_trainings : data.recent_trainings;
+  const periodActivePlayers = data.period_active_players?.length ? data.period_active_players : null;
   const matchAnalytics = buildPremiumMatchAnalytics(completedMatches, periodStats?.match_record);
-  const attendanceSeries = buildPremiumAttendanceSeries(data.recent_trainings);
-  const workloadSeries = buildPremiumWorkloadSeries(data.recent_trainings);
+  const attendanceSeries = buildPremiumAttendanceSeries(periodTrainings);
+  const workloadSeries = buildPremiumWorkloadSeries(periodTrainings);
   const performanceSeries = buildPremiumPerformanceSeries(completedMatches);
   const activePlayers = buildPremiumActivePlayers(players, data.top_recent_active_player);
+  const activeChartLabels = periodActivePlayers
+    ? periodActivePlayers.slice(0, 5).map((player) => shortDisplayName(player.full_name))
+    : activePlayers.map((player) => shortDisplayName(player.full_name));
+  const activeChartValues = periodActivePlayers
+    ? periodActivePlayers.slice(0, 5).map((player) => percent(player.score))
+    : activePlayers.map((player) => player.score);
   const weeklySummary = weeklyAttendanceSummary(data.recent_trainings);
   const kpis: PremiumKpiCardProps[] = [
     {
@@ -933,7 +941,7 @@ function PremiumDashboardPage() {
                     <PremiumDashboardChart title="Haftalik yuklama" subtitle="Yuklama indeksi" type="bar" labels={workloadSeries.labels} values={workloadSeries.values} accent="#F59E0B" />
                   </div>
                   <div className="col-12 col-lg-6">
-                    <PremiumDashboardChart title="Futbolchilar faolligi" subtitle="Eng faol futbolchilar" type="bar" labels={activePlayers.map((player) => shortDisplayName(player.full_name))} values={activePlayers.map((player) => player.score)} accent="#EF4444" />
+                    <PremiumDashboardChart title="Futbolchilar faolligi" subtitle="Eng faol futbolchilar" type="bar" labels={activeChartLabels} values={activeChartValues} accent="#EF4444" />
                   </div>
                 </div>
               </div>

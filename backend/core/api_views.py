@@ -561,7 +561,25 @@ class DashboardAPIView(APIView):
                 "trainings_count": len(top_recent["scores"]),
             }
 
+        period_activity = {}
+        for record in period_records:
+            if record.attendance_status not in ACTIVE_STATUSES:
+                continue
+            bucket = period_activity.setdefault(record.player_id, {"player": record.player, "scores": []})
+            bucket["scores"].append(record.activity_score or record.rating or 0)
+        period_active_players = [
+            {
+                "player_id": item["player"].id,
+                "full_name": item["player"].full_name,
+                "score": round(sum(item["scores"]) / len(item["scores"]) * 10) if item["scores"] else 0,
+                "trainings_count": len(item["scores"]),
+            }
+            for item in period_activity.values()
+        ]
+        period_active_players.sort(key=lambda item: (item["score"], item["trainings_count"]), reverse=True)
+
         recent_trainings = Training.objects.order_by("-training_date", "-start_time")[:5]
+        period_training_series = period_trainings.order_by("-training_date", "-start_time")[:100]
         recent_matches = project_club_matches(Match.objects.all()).order_by("-match_date", "-match_time")[:5]
         recent_completed_matches = (
             project_club_matches(Match.objects.filter(status=Match.STATUS_PLAYED))
@@ -698,6 +716,8 @@ class DashboardAPIView(APIView):
             },
             "top_recent_active_player": top_recent,
             "recent_trainings": TrainingSerializer(recent_trainings, many=True, context={"request": request}).data,
+            "period_trainings": TrainingSerializer(period_training_series, many=True, context={"request": request}).data,
+            "period_active_players": period_active_players[:10],
             "recent_matches": MatchSerializer(recent_matches, many=True, context={"request": request}).data,
             "recent_completed_matches": MatchSerializer(recent_completed_matches, many=True, context={"request": request}).data,
             "period_completed_matches": MatchSerializer(period_completed_matches, many=True, context={"request": request}).data,
