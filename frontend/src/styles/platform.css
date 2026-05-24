@@ -4009,6 +4009,148 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
   stroke-width: 1.5;
 }
 
+.attendance-insight {
+  display: grid;
+  gap: 18px;
+}
+
+.attendance-insight-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.attendance-insight-summary span {
+  min-width: 0;
+  border: 1px solid #e7edf6;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, #f8fbff, #ffffff);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .85);
+}
+
+.attendance-insight-summary strong {
+  display: block;
+  color: #1f2937;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.attendance-insight-summary small {
+  display: block;
+  margin-top: 6px;
+  color: #8b929c;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.attendance-column-chart {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  min-height: 150px;
+}
+
+.attendance-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 8px 28px 0;
+  color: #a0a6ad;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.attendance-plot {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(42px, 1fr);
+  align-items: end;
+  gap: 14px;
+  min-height: 150px;
+  padding: 4px 6px 0;
+  border-left: 1px solid #edf1f6;
+}
+
+.attendance-grid-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #edf0f4;
+  pointer-events: none;
+}
+
+.attendance-grid-line.top { top: 4px; }
+.attendance-grid-line.middle { top: 50%; }
+.attendance-grid-line.bottom { bottom: 28px; }
+
+.attendance-bar-group {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: 20px minmax(0, 112px) 22px;
+  justify-items: center;
+  align-items: end;
+  min-width: 0;
+}
+
+.attendance-bar-group strong {
+  align-self: start;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.attendance-bar-shell {
+  position: relative;
+  width: min(42px, 72%);
+  height: var(--total-height);
+  min-height: 10px;
+  overflow: hidden;
+  border: 1px solid #dfe7f2;
+  border-radius: 8px 8px 5px 5px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #edf3fb 0 6px,
+    #f8fbff 6px 12px
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 10px 22px rgba(37, 99, 235, .10);
+}
+
+.attendance-bar-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--present-height);
+  border-radius: 7px 7px 4px 4px;
+  background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .34);
+}
+
+.attendance-bar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .28), transparent 58%);
+}
+
+.attendance-bar-group small {
+  max-width: 58px;
+  overflow: hidden;
+  color: #9a9a92;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .statistics-goal-bar {
   fill: #5b981f;
 }
@@ -4044,6 +4186,10 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
 .statistics-legend i.blue { background: #3488df; }
 .statistics-legend i.green { background: #5b981f; }
 .statistics-legend i.yellow { background: #f59e0b; }
+.statistics-legend i.muted {
+  border: 1px solid #dfe7f2;
+  background: #edf3fb;
+}
 
 .statistics-ranking-card article {
   display: grid;

@@ -190,9 +190,22 @@ function FullScreenLoading() {
   );
 }
 
+const uzbekMonthNames = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
+
+function parseDate(value?: string) {
+  if (!value) return null;
+  const [datePart] = value.split('T');
+  const parts = datePart.split('-').map(Number);
+  const date = parts.length === 3 && parts.every(Number.isFinite)
+    ? new Date(parts[0], parts[1] - 1, parts[2])
+    : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function formatDate(value?: string) {
-  if (!value) return '-';
-  return new Intl.DateTimeFormat('uz-UZ', { year: 'numeric', month: 'short', day: '2-digit' }).format(new Date(value));
+  const date = parseDate(value);
+  if (!date) return '-';
+  return `${date.getDate()}-${uzbekMonthNames[date.getMonth()]} ${date.getFullYear()}`;
 }
 
 function formatTime(value?: string) {
@@ -200,14 +213,9 @@ function formatTime(value?: string) {
 }
 
 function formatDateShort(value?: string) {
-  if (!value) return '-';
-  try {
-    const d = new Date(value);
-    const months = ['yan', 'fev', 'mar', 'apr', 'may', 'iyn', 'iyl', 'avg', 'sen', 'okt', 'noy', 'dek'];
-    return `${d.getDate()} ${months[d.getMonth()]}`;
-  } catch {
-    return value;
-  }
+  const date = parseDate(value);
+  if (!date) return value || '-';
+  return `${date.getDate()}-${uzbekMonthNames[date.getMonth()]}`;
 }
 
 function percent(value: number) {
@@ -2940,41 +2948,77 @@ function Bar({ label, value }: { label: string; value: number }) {
 
 function StatisticsAttendanceChart({ rows }: { rows: AttendanceTrendPoint[] }) {
   const maxTotal = Math.max(1, ...rows.map((row) => row.total));
-  const left = 28;
-  const right = 286;
-  const top = 12;
-  const bottom = 88;
-  const step = rows.length > 1 ? (right - left) / (rows.length - 1) : 0;
-  const point = (row: AttendanceTrendPoint, index: number) => ({
-    x: left + step * index,
-    y: bottom - (row.present / maxTotal) * (bottom - top),
-  });
-  const points = rows.map(point);
-  const polyline = points.map((item) => `${item.x},${item.y}`).join(' ');
-  const area = points.length ? `${left},${bottom} ${polyline} ${points[points.length - 1].x},${bottom}` : '';
+  const averagePercent = rows.length
+    ? Math.round(rows.reduce((sum, row) => sum + (row.total ? (row.present / row.total) * 100 : 0), 0) / rows.length)
+    : 0;
+  const bestPoint = rows.reduce<AttendanceTrendPoint | null>((best, row) => {
+    if (!best) return row;
+    const bestPercent = best.total ? best.present / best.total : 0;
+    const rowPercent = row.total ? row.present / row.total : 0;
+    return rowPercent > bestPercent ? row : best;
+  }, null);
+  const latestPoint = rows[rows.length - 1];
+  const formatChartDate = (value: string) => {
+    return formatDateShort(value);
+  };
 
   return (
     <section className="card statistics-chart-card">
       <h2>Davomad dinamikasi</h2>
       {rows.length ? (
-        <>
-          <svg viewBox="0 0 300 120" role="img" aria-label="Davomad dinamikasi">
-            {[0, 1, 2, 3].map((item) => {
-              const y = top + ((bottom - top) / 3) * item;
-              const label = Math.round(maxTotal - (maxTotal / 3) * item);
-              return <g key={item}><line x1={left} x2={right} y1={y} y2={y} /><text x="4" y={y + 3}>{label}</text></g>;
-            })}
-            <polygon className="statistics-attendance-area" points={area} />
-            <polyline className="statistics-attendance-line" points={polyline} />
-            {points.map((item, index) => (
-              <g key={`${rows[index].date}-${index}`}>
-                <circle cx={item.x} cy={item.y} r="3.2" />
-                <text x={item.x} y="105">{new Date(rows[index].date).getDate()}</text>
-              </g>
-            ))}
-          </svg>
-          <p className="statistics-legend"><i className="blue" /> Qatnashganlar soni</p>
-        </>
+        <div className="attendance-insight">
+          <div className="attendance-insight-summary" aria-label="Davomad xulosasi">
+            <span>
+              <strong>{averagePercent}%</strong>
+              <small>o'rtacha davomad</small>
+            </span>
+            <span>
+              <strong>{latestPoint?.present ?? 0}/{latestPoint?.total ?? 0}</strong>
+              <small>oxirgi mashg'ulot</small>
+            </span>
+            <span>
+              <strong>{bestPoint ? `${bestPoint.present}/${bestPoint.total}` : '0/0'}</strong>
+              <small>eng yaxshi kun</small>
+            </span>
+          </div>
+
+          <div className="attendance-column-chart" role="img" aria-label="Qatnashganlar soni bo'yicha ustunli grafik">
+            <div className="attendance-y-axis" aria-hidden="true">
+              <span>{maxTotal}</span>
+              <span>{Math.round(maxTotal / 2)}</span>
+              <span>0</span>
+            </div>
+            <div className="attendance-plot">
+              <span className="attendance-grid-line top" />
+              <span className="attendance-grid-line middle" />
+              <span className="attendance-grid-line bottom" />
+              {rows.map((row, index) => {
+                const totalHeight = Math.max(8, (row.total / maxTotal) * 100);
+                const presentHeight = row.total ? Math.max(6, (row.present / row.total) * totalHeight) : 0;
+                const percent = row.total ? Math.round((row.present / row.total) * 100) : 0;
+                return (
+                  <div
+                    className="attendance-bar-group"
+                    key={`${row.date}-${index}`}
+                    style={{
+                      '--total-height': `${totalHeight}%`,
+                      '--present-height': `${presentHeight}%`,
+                    } as CSSProperties}
+                    title={`${formatChartDate(row.date)}: ${row.present}/${row.total} (${percent}%)`}
+                  >
+                    <strong>{row.present}</strong>
+                    <span className="attendance-bar-shell">
+                      <span className="attendance-bar-fill" />
+                    </span>
+                    <small>{formatChartDate(row.date)}</small>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <p className="statistics-legend"><i className="blue" /> Qatnashganlar soni <i className="muted" /> Jami ro'yxat</p>
+        </div>
       ) : (
         <EmptyState title="Davomad dinamikasi yo'q" />
       )}
