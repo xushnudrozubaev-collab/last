@@ -295,6 +295,15 @@ export type ReportData = {
   top_activity?: Array<{ player_id: number; player_name: string; value: number }>;
 };
 
+export type ReportParams = {
+  report_type: 'attendance' | 'performance' | 'matches' | 'player' | 'training' | 'month';
+  start_date?: string;
+  end_date?: string;
+  player_id?: number;
+  training_id?: number;
+  month?: string;
+};
+
 export type PlayerProfile = {
   player: Player;
   stats: Record<string, number | string>;
@@ -594,15 +603,12 @@ export const statisticsAPI = {
 };
 
 export const reportsAPI = {
-  async get(params: {
-    report_type: 'attendance' | 'performance' | 'matches' | 'player' | 'training' | 'month';
-    start_date?: string;
-    end_date?: string;
-    player_id?: number;
-    training_id?: number;
-    month?: string;
-  }) {
+  async get(params: ReportParams) {
     return unwrap<ReportData>(await api.get<ApiEnvelope<ReportData>>('/reports/', { params }));
+  },
+  async download(params: ReportParams) {
+    const response = await api.get<Blob>('/reports/print/', { params, responseType: 'blob' });
+    return response.data;
   },
 };
 

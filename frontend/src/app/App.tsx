@@ -20,6 +20,7 @@ import {
   Check,
   ClipboardList,
   Clock,
+  Download,
   Dumbbell,
   Edit,
   FileText,
@@ -30,7 +31,6 @@ import {
   Menu,
   MoreVertical,
   Plus,
-  Printer,
   RefreshCw,
   Save,
   Search,
@@ -70,6 +70,7 @@ import {
   PlayerPayload,
   PlayerProfile,
   ReportData,
+  ReportParams,
   StatisticsData,
   StatisticsPlayerRow,
   StatisticsRankings,
@@ -3253,16 +3254,39 @@ function ReportsPage() {
   const [endDate, setEndDate] = useState(today());
   const [report, setReport] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
   const notify = useToast();
+  const reportParams = (): ReportParams => ({ report_type: reportType, start_date: startDate, end_date: endDate });
 
   const build = async () => {
     setLoading(true);
     try {
-      setReport(await reportsAPI.get({ report_type: reportType, start_date: startDate, end_date: endDate }));
+      setReport(await reportsAPI.get(reportParams()));
     } catch (err) {
       notify(getApiError(err), 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const downloadPdf = async () => {
+    if (!report) return;
+    setDownloading(true);
+    try {
+      const blob = await reportsAPI.download(reportParams());
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `hisobot-${reportType}-${startDate}-${endDate}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      notify('Hisobot PDF yuklab olindi.');
+    } catch (err) {
+      notify(getApiError(err, 'PDF yuklab olishda xatolik yuz berdi.'), 'error');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -3296,41 +3320,52 @@ function ReportsPage() {
 
   return (
     <Layout>
-      <PageHeader
-        title={<span className="report-page-title"><FileText size={26} /> Hisobotlar</span>}
-        action={<button className="button ghost report-print-button" onClick={() => window.print()} disabled={!report}><Printer size={18} /> Chop etish</button>}
-      />
-      <div className="report-date-toolbar no-print">
-        <label>
-          <CalendarDays size={17} />
-          <input className="input" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} />
-        </label>
-        <span>-</span>
-        <label>
-          <CalendarDays size={17} />
-          <input className="input" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} />
-        </label>
-        <button className="button ghost" onClick={build} disabled={loading}><RefreshCw size={18} /> {loading ? 'Yuklanmoqda...' : 'Yangilash'}</button>
-      </div>
-
-      <section className="report-selector no-print">
-        <p>Hisobot turi</p>
-        <div className="report-choice-grid">
-          {choices.map((choice) => {
-            const Icon = choice.icon;
-            return (
-              <button className={`report-choice-card ${reportType === choice.value ? 'active' : ''}`} key={choice.value} type="button" onClick={() => setReportType(choice.value)}>
-                <span className={`report-choice-icon ${choice.tone}`}><Icon size={24} /></span>
-                <strong>{choice.title}</strong>
-                <span>{choice.text}</span>
-              </button>
-            );
-          })}
+      <div className="reports-page">
+        <PageHeader
+          title={<span className="report-page-title"><FileText size={26} /> Hisobotlar</span>}
+        />
+        <div className="report-date-toolbar no-print">
+          <div className="report-date-group">
+            <label className="report-date-field">
+              <span>Boshlanish</span>
+              <span className="report-date-control">
+                <CalendarDays size={16} />
+                <input className="input" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} />
+              </span>
+            </label>
+            <label className="report-date-field">
+              <span>Tugash</span>
+              <span className="report-date-control">
+                <CalendarDays size={16} />
+                <input className="input" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} />
+              </span>
+            </label>
+            <button className="button primary report-update-button" onClick={build} disabled={loading}><RefreshCw size={17} /> {loading ? 'Yuklanmoqda...' : 'Yangilash'}</button>
+          </div>
+          <button className="button ghost report-download-button" onClick={downloadPdf} disabled={!report || loading || downloading}>
+            <Download size={17} /> {downloading ? 'Tayyorlanmoqda...' : 'Yuklab olish'}
+          </button>
         </div>
-      </section>
 
-      <div className="report-output">
-        {report ? <ReportSurface report={report} /> : <div className="card"><EmptyState title="Hisobot topilmadi" text="Sana oralig'ini tekshirib yangilang." /></div>}
+        <section className="report-selector no-print">
+          <p>Hisobot turi</p>
+          <div className="report-choice-grid">
+            {choices.map((choice) => {
+              const Icon = choice.icon;
+              return (
+                <button className={`report-choice-card ${reportType === choice.value ? 'active' : ''}`} key={choice.value} type="button" onClick={() => setReportType(choice.value)} aria-pressed={reportType === choice.value}>
+                  <span className={`report-choice-icon ${choice.tone}`}><Icon size={20} /></span>
+                  <strong>{choice.title}</strong>
+                  <span>{choice.text}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <div className="report-output">
+          {report ? <ReportSurface report={report} /> : <div className="card"><EmptyState title="Hisobot topilmadi" text="Sana oralig'ini tekshirib yangilang." /></div>}
+        </div>
       </div>
     </Layout>
   );
@@ -3416,6 +3451,11 @@ function ReportStatus({ label, tone }: { label: string; tone: string }) {
 }
 
 function AttendanceReportSurface({ report }: { report: ReportData }) {
+  const injuryPlayers = report.injury_overview?.players ?? [];
+  const healthyCount = report.injury_overview?.healthy_count ?? 0;
+  const injuredCount = injuryPlayers.filter((item) => item.tone === 'red' || item.status.toLowerCase().includes('bor')).length;
+  const recoveringCount = injuryPlayers.filter((item) => item.tone === 'yellow' || item.status.toLowerCase().includes('tiklan')).length;
+
   return (
     <div className="report-surface report-modern-surface">
       <ReportSummary report={report} />
@@ -3429,8 +3469,8 @@ function AttendanceReportSurface({ report }: { report: ReportData }) {
                 <th>Keldi</th>
                 <th>Kelmadi</th>
                 <th>Davomad %</th>
-                <th>Avg baho</th>
-                <th>Avg faollik</th>
+                <th>O'rtacha baho</th>
+                <th>O'rtacha faollik</th>
                 <th>Holat</th>
               </tr>
             </thead>
@@ -3457,17 +3497,33 @@ function AttendanceReportSurface({ report }: { report: ReportData }) {
       </section>
       <div className="report-side-grid">
         <article className="report-side-card">
-          <h3>Ko'p qolgan futbolchilar</h3>
-          {report.most_absent?.length ? report.most_absent.map((item) => (
-            <div className="report-side-row" key={item.player_id}><span>{item.player_name}</span><strong className="report-danger-value">{item.absent} marta</strong></div>
-          )) : <p className="muted">Kelmagan futbolchi yo'q.</p>}
+          <div className="report-side-card-head">
+            <h3>Ko'p qolgan futbolchilar</h3>
+            <span>Davomad nazorati</span>
+          </div>
+          <div className="report-side-list">
+            {report.most_absent?.length ? report.most_absent.map((item) => (
+              <div className="report-side-row" key={item.player_id}><span>{item.player_name}</span><strong className="report-danger-value">{item.absent} marta</strong></div>
+            )) : <p className="muted">Kelmagan futbolchi yo'q.</p>}
+          </div>
         </article>
-        <article className="report-side-card">
-          <h3>Jarohat holati</h3>
-          {report.injury_overview?.players.map((item) => (
-            <div className="report-side-row" key={item.player_id}><span>{item.player_name}</span><ReportStatus label={item.status} tone={item.tone} /></div>
-          ))}
-          <div className="report-side-row"><span>Qolgan {report.injury_overview?.healthy_count || 0} ta</span><ReportStatus label="Sog'lom" tone="green" /></div>
+        <article className="report-side-card report-injury-card">
+          <div className="report-side-card-head">
+            <h3>Jarohat holati</h3>
+            <span>{healthyCount + injuryPlayers.length} futbolchi</span>
+          </div>
+          <div className="report-injury-stats">
+            <span><b>{injuredCount}</b> Jarohatli</span>
+            <span><b>{healthyCount}</b> Sog'lom</span>
+            <span><b>{recoveringCount}</b> Tiklanmoqda</span>
+          </div>
+          <div className="report-side-list">
+            {injuryPlayers.map((item) => (
+              <div className="report-side-row" key={item.player_id}><span>{item.player_name}</span><ReportStatus label={item.status} tone={item.tone} /></div>
+            ))}
+            {!injuryPlayers.length && <p className="muted">Jarohat qayd etilmagan.</p>}
+            <div className="report-side-row"><span>Qolgan {healthyCount} ta</span><ReportStatus label="Sog'lom" tone="green" /></div>
+          </div>
         </article>
       </div>
     </div>
@@ -3482,7 +3538,7 @@ function PerformanceReportSurface({ report }: { report: ReportData }) {
         <ReportHeading report={report} />
         <div className="table-wrap">
           <table className="table report-table">
-            <thead><tr><th>Futbolchi</th><th>Pozitsiya</th><th>Mashg'ulot</th><th>Avg baho</th><th>Avg faollik</th><th>Intizom</th><th>Holat</th></tr></thead>
+            <thead><tr><th>Futbolchi</th><th>Pozitsiya</th><th>Mashg'ulot</th><th>O'rtacha baho</th><th>O'rtacha faollik</th><th>Intizom</th><th>Holat</th></tr></thead>
             <tbody>
               {report.rows.map((row) => (
                 <tr key={reportNumber(row, 'player_id')}>

@@ -1,5 +1,8 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta
+from html import escape
+from io import BytesIO
+from pathlib import Path
 
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import User
@@ -1293,6 +1296,235 @@ def build_matches_range_report(start, end):
     }
 
 
+REPORT_PDF_COLUMNS = {
+    "attendance": [
+        ("Futbolchi", lambda row: row.get("short_name") or row.get("full_name")),
+        ("Keldi", "present"),
+        ("Kelmadi", "absent"),
+        ("Davomad", lambda row: f"{row.get('attendance_percent', 0)}%"),
+        ("O'rtacha baho", "avg_rating"),
+        ("O'rtacha faollik", "avg_activity"),
+        ("Holat", "status_label"),
+    ],
+    "performance": [
+        ("Futbolchi", lambda row: row.get("short_name") or row.get("full_name")),
+        ("Pozitsiya", "position_display"),
+        ("Mashg'ulot", "present"),
+        ("O'rtacha baho", "avg_rating"),
+        ("O'rtacha faollik", "avg_activity"),
+        ("Intizom", "discipline_issues"),
+        ("Holat", "status_label"),
+    ],
+    "matches": [
+        ("Sana", "date"),
+        ("O'yin", "fixture"),
+        ("Stadion", "stadium"),
+        ("Hisob", "score"),
+        ("Natija", "result"),
+        ("Status", "status"),
+        ("Zarba", lambda row: f"{row.get('shots', 0)} / {row.get('shots_on_target', 0)}"),
+        ("Burchak", "corners"),
+    ],
+}
+
+
+def report_pdf_value(row, accessor):
+    value = accessor(row) if callable(accessor) else row.get(accessor, "")
+    if value is None:
+        return ""
+    return str(value)
+
+
+def report_pdf_generic_columns(rows):
+    if not rows:
+        return []
+    ignored = {"id", "player_id", "initials", "status_tone", "tone"}
+    labels = {
+        "short_name": "Futbolchi",
+        "full_name": "Futbolchi",
+        "position_display": "Pozitsiya",
+        "attendance_percent": "Davomad",
+        "avg_rating": "O'rtacha baho",
+        "avg_activity": "O'rtacha faollik",
+    }
+    return [
+        (labels.get(key, key.replace("_", " ").capitalize()), key)
+        for key in rows[0].keys()
+        if key not in ignored
+    ][:9]
+
+
+def report_pdf_columns(report):
+    rows = report.get("rows", [])
+    return REPORT_PDF_COLUMNS.get(report.get("report_type")) or report_pdf_generic_columns(rows)
+
+
+def report_pdf_fonts():
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+
+    candidates = [
+        (
+            "ReportSans",
+            "ReportSansBold",
+            Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+            Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
+        ),
+        (
+            "ReportSans",
+            "ReportSansBold",
+            Path("C:/Windows/Fonts/arial.ttf"),
+            Path("C:/Windows/Fonts/arialbd.ttf"),
+        ),
+    ]
+    for regular_name, bold_name, regular_path, bold_path in candidates:
+        if regular_path.exists() and bold_path.exists():
+            if regular_name not in pdfmetrics.getRegisteredFontNames():
+                pdfmetrics.registerFont(TTFont(regular_name, str(regular_path)))
+            if bold_name not in pdfmetrics.getRegisteredFontNames():
+                pdfmetrics.registerFont(TTFont(bold_name, str(bold_path)))
+            return regular_name, bold_name
+    return "Helvetica", "Helvetica-Bold"
+
+
+def render_report_pdf(report):
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.units import mm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+    regular_font, bold_font = report_pdf_fonts()
+    buffer = BytesIO()
+    document = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        rightMargin=14 * mm,
+        leftMargin=14 * mm,
+        topMargin=12 * mm,
+        bottomMargin=12 * mm,
+        title=report.get("title", "Hisobot"),
+    )
+    base_styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        "ReportTitle",
+        parent=base_styles["Title"],
+        fontName=bold_font,
+        fontSize=18,
+        leading=22,
+        alignment=TA_LEFT,
+        textColor=colors.HexColor("#0f172a"),
+        spaceAfter=4,
+    )
+    subtitle_style = ParagraphStyle(
+        "ReportSubtitle",
+        parent=base_styles["Normal"],
+        fontName=regular_font,
+        fontSize=9,
+        leading=12,
+        textColor=colors.HexColor("#64748b"),
+        spaceAfter=10,
+    )
+    card_style = ParagraphStyle(
+        "ReportCard",
+        parent=base_styles["Normal"],
+        fontName=regular_font,
+        fontSize=9,
+        leading=13,
+        textColor=colors.HexColor("#334155"),
+        alignment=TA_CENTER,
+    )
+    header_style = ParagraphStyle(
+        "ReportTableHeader",
+        parent=base_styles["Normal"],
+        fontName=bold_font,
+        fontSize=8,
+        leading=10,
+        textColor=colors.white,
+        alignment=TA_LEFT,
+    )
+    cell_style = ParagraphStyle(
+        "ReportTableCell",
+        parent=base_styles["Normal"],
+        fontName=regular_font,
+        fontSize=8,
+        leading=10,
+        textColor=colors.HexColor("#0f172a"),
+    )
+
+    elements = [
+        Paragraph(escape(str(report.get("title", "Hisobot"))), title_style),
+        Paragraph(escape(str(report.get("subtitle", ""))), subtitle_style),
+    ]
+
+    summary = report.get("summary", [])
+    if summary:
+        summary_width = document.width / 4
+        summary_rows = []
+        for index in range(0, len(summary), 4):
+            items = summary[index:index + 4]
+            summary_rows.append([
+                Paragraph(
+                    f"<font color='#64748b'>{escape(str(item.get('label', '')))}</font><br/>"
+                    f"<font size='15'>{escape(str(item.get('value', '')))}</font>",
+                    card_style,
+                )
+                for item in items
+            ] + [""] * (4 - len(items)))
+        summary_table = Table(summary_rows, colWidths=[summary_width] * 4, hAlign="LEFT")
+        summary_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f8fafc")),
+            ("BOX", (0, 0), (-1, -1), 0.6, colors.HexColor("#d7dee9")),
+            ("INNERGRID", (0, 0), (-1, -1), 0.6, colors.HexColor("#d7dee9")),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("TOPPADDING", (0, 0), (-1, -1), 8),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ]))
+        elements.extend([summary_table, Spacer(1, 10)])
+
+    rows = report.get("rows", [])
+    columns = report_pdf_columns(report)
+    if columns:
+        table_data = [[Paragraph(escape(label), header_style) for label, _ in columns]]
+        for row in rows:
+            table_data.append([
+                Paragraph(escape(report_pdf_value(row, accessor)), cell_style)
+                for _, accessor in columns
+            ])
+        report_table = Table(
+            table_data,
+            colWidths=[document.width / len(columns)] * len(columns),
+            repeatRows=1,
+            hAlign="LEFT",
+        )
+        report_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2563eb")),
+            ("BOX", (0, 0), (-1, -1), 0.6, colors.HexColor("#cbd5e1")),
+            ("INNERGRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#d7dee9")),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fbff")]),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ]))
+        elements.append(report_table)
+    else:
+        elements.append(Paragraph("Hisobot uchun qatorlar topilmadi.", subtitle_style))
+
+    document.build(elements)
+    pdf = buffer.getvalue()
+    buffer.close()
+    return pdf
+
+
+def report_pdf_filename(report):
+    report_type = report.get("report_type") or "hisobot"
+    generated_at = datetime.now().strftime("%Y%m%d_%H%M")
+    return f"hisobot_{report_type}_{generated_at}.pdf"
+
+
 class ReportsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -1329,31 +1561,9 @@ class ReportPrintAPIView(APIView):
     def get(self, request):
         response = ReportsAPIView().get(request)
         report = response.data.get("data", {})
-        rows = report.get("rows", [])
-        headers = list(rows[0].keys()) if rows else []
-        html = [
-            "<!doctype html><html lang='uz'><head><meta charset='utf-8'>",
-            "<title>Hisobot</title>",
-            "<style>body{font-family:Arial,sans-serif;color:#111827;padding:32px}"
-            "h1{margin:0 0 8px}table{width:100%;border-collapse:collapse;margin-top:24px}"
-            "th,td{border:1px solid #d1d5db;padding:8px;text-align:left;font-size:13px}"
-            ".summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}"
-            ".card{border:1px solid #d1d5db;padding:12px}.label{color:#64748b;font-size:12px}"
-            "@media print{button{display:none}}</style></head><body>",
-            "<button onclick='window.print()'>Chop etish</button>",
-            f"<h1>{report.get('title', 'Hisobot')}</h1>",
-            f"<p>{report.get('subtitle', '')}</p><div class='summary'>",
-        ]
-        for item in report.get("summary", []):
-            html.append(f"<div class='card'><div class='label'>{item['label']}</div><strong>{item['value']}</strong></div>")
-        html.append("</div><table><thead><tr>")
-        for header in headers:
-            html.append(f"<th>{header}</th>")
-        html.append("</tr></thead><tbody>")
-        for row in rows:
-            html.append("<tr>")
-            for header in headers:
-                html.append(f"<td>{row.get(header, '')}</td>")
-            html.append("</tr>")
-        html.append("</tbody></table></body></html>")
-        return HttpResponse("".join(html))
+        pdf = render_report_pdf(report)
+        filename = report_pdf_filename(report)
+        download = HttpResponse(pdf, content_type="application/pdf")
+        download["Content-Disposition"] = f'attachment; filename="{filename}"'
+        download["Content-Length"] = str(len(pdf))
+        return download
