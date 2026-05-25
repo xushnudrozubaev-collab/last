@@ -3282,24 +3282,25 @@ html[data-theme='light'] .dashboard-recent-card,
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .match-summary-card {
-  min-height: 116px;
+  min-height: 92px;
   border: 1px solid #d7dee9;
-  border-radius: 8px;
-  background: #fff;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fff, #f9fbff);
   display: grid;
   place-content: center;
-  gap: 8px;
-  padding: 18px;
+  gap: 6px;
+  padding: 14px 16px;
   text-align: center;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, .06);
 }
 
 .match-summary-card strong {
   color: #111827;
-  font-size: 30px;
+  font-size: 28px;
   line-height: 1;
   font-weight: 850;
 }
@@ -3780,31 +3781,54 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
   opacity: .46;
 }
 
+.match-detail-page .page-header {
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.page-content:has(.match-detail-page) {
+  padding-top: 22px;
+}
+
 .match-header-card {
   display: grid;
   grid-template-columns: minmax(180px, 1fr) auto minmax(180px, 1fr);
   align-items: center;
-  gap: 18px;
-  margin-bottom: 18px;
-  padding-block: 18px 16px;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 16px 22px 14px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(248, 251, 255, .96));
+  box-shadow: 0 18px 36px rgba(15, 23, 42, .07);
+}
+
+.match-header-card .avatar-lg {
+  width: 58px;
+  height: 58px;
+  min-width: 58px;
+  min-height: 58px;
+  max-width: 58px;
+  max-height: 58px;
 }
 
 .match-team,
 .match-scoreboard {
   display: grid;
   justify-items: center;
-  gap: 7px;
+  gap: 5px;
   text-align: center;
 }
 
 .match-team strong {
-  font-size: 18px;
+  font-size: 17px;
+  line-height: 1.15;
   color: #111827;
 }
 
 .match-team span {
   color: #64748b;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .match-scoreboard strong {
@@ -3814,15 +3838,24 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
   font-weight: 900;
 }
 
+.match-scoreboard .badge {
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
 .match-meta-line {
   grid-column: 1 / -1;
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 12px 22px;
-  padding-top: 14px;
+  gap: 8px 16px;
+  margin-top: 2px;
+  padding: 10px 12px 0;
   border-top: 1px solid #e2e8f0;
   color: #64748b;
+  font-size: 14px;
 }
 
 .match-meta-line span {
@@ -3833,15 +3866,37 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
 
 .match-extra-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.match-facts,
+.match-possession {
+  min-height: 178px;
+  border-radius: 18px;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, .06);
+}
+
+.match-facts .card-title,
+.match-possession .card-title,
+.match-note-card .card-title {
+  margin-bottom: 12px;
+  font-size: 18px;
+  line-height: 1.2;
 }
 
 .match-facts p {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  margin: 16px 0 0;
-  padding-top: 12px;
+  margin: 0;
+  padding: 12px 0;
   border-top: 1px solid #edf2f7;
+}
+
+.match-facts p:first-of-type {
+  border-top: 0;
+  padding-top: 2px;
 }
 
 .match-facts span,
@@ -3849,8 +3904,8 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
   color: #64748b;
 }
 
-.match-possession div:not(.match-possession-track) {
-  margin-top: 24px;
+.match-possession-row {
+  margin-top: 4px;
   display: grid;
   grid-template-columns: auto 1fr 1fr auto;
   gap: 10px;
@@ -3858,8 +3913,8 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
 }
 
 .match-possession-track {
-  height: 12px;
-  margin-top: 18px;
+  height: 10px;
+  margin-top: 14px;
   border-radius: 999px;
   overflow: hidden;
   background: #e2e8f0;
@@ -3872,8 +3927,36 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
   background: #2563eb;
 }
 
+.match-possession-mini {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.match-possession-mini span {
+  min-width: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: #f8fbff;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.match-possession-mini b {
+  display: block;
+  margin-bottom: 3px;
+  color: #111827;
+  font-size: 18px;
+  line-height: 1;
+}
+
 .match-note-card {
-  margin-top: 18px;
+  margin-top: 16px;
+  border-radius: 18px;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, .06);
 }
 
 .match-note-card p {
@@ -4538,6 +4621,14 @@ html[data-theme='light'] .page-content:has(.trainings-page) {
   .match-extra-grid,
   .match-header-card {
     grid-template-columns: 1fr;
+  }
+
+  .match-possession-mini {
+    grid-template-columns: 1fr;
+  }
+
+  .match-detail-page .page-header {
+    align-items: flex-start;
   }
 
   .statistics-kpi-grid,

@@ -2870,65 +2870,80 @@ function MatchDetailPage() {
   const fixture = getProjectClubFixture(match);
   const pendingMatch = match.status === 'upcoming';
   const detailStat = (value: number | null | undefined) => (pendingMatch ? '-' : value || 0);
+  const shotAccuracy = pendingMatch
+    ? '-'
+    : match.shots
+      ? `${Math.round((Number(match.shots_on_target || 0) / Number(match.shots)) * 100)}%`
+      : '0%';
+  const attackIndex = pendingMatch
+    ? '-'
+    : percent(Math.round((Number(match.shots || 0) * 4 + Number(match.shots_on_target || 0) * 7 + Number(match.corners || 0) * 5) / 1.8));
 
   return (
     <Layout>
-      <PageHeader
-        title={<span className="match-detail-title"><button className="button ghost match-back-button" onClick={() => navigate('/oyinlar')}><ArrowLeft size={15} /> Orqaga</button> <span>O'yin tafsiloti</span></span>}
-        action={<button className="button ghost" onClick={() => setEditing(true)}><Edit size={17} /> Tahrirlash</button>}
-      />
+      <div className="match-detail-page">
+        <PageHeader
+          title={<span className="match-detail-title"><button className="button ghost match-back-button" onClick={() => navigate('/oyinlar')}><ArrowLeft size={15} /> Orqaga</button> <span>O'yin tafsiloti</span></span>}
+          action={<button className="button ghost match-edit-button" onClick={() => setEditing(true)}><Edit size={17} /> Tahrirlash</button>}
+        />
 
-      <section className="card match-header-card">
-        <div className="match-team">
-          <TeamLogo teamName={fixture.left.name} logoUrl={fixture.left.logoUrl} size="lg" />
-          <strong>{fixture.left.name}</strong>
-          <span>{fixture.left.label}</span>
-        </div>
-        <div className="match-scoreboard">
-          <strong>{fixture.left.score ?? '-'} - {fixture.right.score ?? '-'}</strong>
-          <span className={`badge ${matchResultTone(result)}`}>{result}</span>
-        </div>
-        <div className="match-team">
-          <TeamLogo teamName={fixture.right.name} logoUrl={fixture.right.logoUrl} size="lg" />
-          <strong>{fixture.right.name}</strong>
-          <span>{fixture.right.label}</span>
-        </div>
-        <div className="match-meta-line">
-          <span><CalendarDays size={16} /> {formatDate(match.match_date)}</span>
-          <span><Clock size={16} /> {formatTime(match.match_time)}</span>
-          <span><MapPin size={16} /> {match.stadium}</span>
-          <span><Users size={16} /> {match.attendance ? Number(match.attendance).toLocaleString() : '-'} tomoshabin</span>
-          <span><UserRound size={16} /> {match.referee || '-'}</span>
-        </div>
-      </section>
+        <section className="card match-header-card">
+          <div className="match-team">
+            <TeamLogo teamName={fixture.left.name} logoUrl={fixture.left.logoUrl} size="lg" />
+            <strong>{fixture.left.name}</strong>
+            <span>{fixture.left.label}</span>
+          </div>
+          <div className="match-scoreboard">
+            <strong>{fixture.left.score ?? '-'} - {fixture.right.score ?? '-'}</strong>
+            <span className={`badge ${matchResultTone(result)}`}>{result}</span>
+          </div>
+          <div className="match-team">
+            <TeamLogo teamName={fixture.right.name} logoUrl={fixture.right.logoUrl} size="lg" />
+            <strong>{fixture.right.name}</strong>
+            <span>{fixture.right.label}</span>
+          </div>
+          <div className="match-meta-line">
+            <span><CalendarDays size={15} /> {formatDate(match.match_date)}</span>
+            <span><Clock size={15} /> {formatTime(match.match_time)}</span>
+            <span><MapPin size={15} /> {match.stadium}</span>
+            <span><Users size={15} /> {match.attendance ? Number(match.attendance).toLocaleString() : '-'} tomoshabin</span>
+            <span><UserRound size={15} /> {match.referee || '-'}</span>
+          </div>
+        </section>
 
-      <div className="match-detail-stats">
-        <article className="match-summary-card"><strong>{detailStat(match.shots)}</strong><span>Zarba soni</span></article>
-        <article className="match-summary-card"><strong>{detailStat(match.shots_on_target)}</strong><span>Darvozaga zarba</span></article>
-        <article className="match-summary-card"><strong>{detailStat(match.corners)}</strong><span>Burchak zarbalari</span></article>
-        <article className="match-summary-card draw"><strong>{detailStat(match.yellow_cards)}</strong><span>Sariq karta</span></article>
+        <div className="match-detail-stats">
+          <article className="match-summary-card"><strong>{detailStat(match.shots)}</strong><span>Zarba soni</span></article>
+          <article className="match-summary-card"><strong>{detailStat(match.shots_on_target)}</strong><span>Darvozaga zarba</span></article>
+          <article className="match-summary-card"><strong>{detailStat(match.corners)}</strong><span>Burchak zarbalari</span></article>
+          <article className="match-summary-card draw"><strong>{detailStat(match.yellow_cards)}</strong><span>Sariq karta</span></article>
+        </div>
+
+        <div className="grid match-extra-grid">
+          <section className="card match-facts">
+            <h2 className="card-title">Qo'shimcha info</h2>
+            <p><span>Qizil karta</span><strong>{detailStat(match.red_cards)}</strong></p>
+            <p><span>Hakam</span><strong>{match.referee || '-'}</strong></p>
+            <p><span>Tomoshabin</span><strong>{match.attendance ? Number(match.attendance).toLocaleString() : '-'}</strong></p>
+          </section>
+          <section className="card match-possession">
+            <h2 className="card-title">To'p egallash</h2>
+            <div className="match-possession-row"><strong>{fixture.leftPossession}%</strong><span>{fixture.left.name}</span><span>{fixture.right.name}</span><strong>{fixture.rightPossession}%</strong></div>
+            <div className="match-possession-track"><i style={{ width: `${fixture.leftPossession}%` }} /></div>
+            <div className="match-possession-mini">
+              <span><b>{detailStat(match.shots_on_target)}</b> Aniq zarba</span>
+              <span><b>{shotAccuracy}</b> Aniqlik</span>
+              <span><b>{attackIndex}</b> Hujum indeksi</span>
+            </div>
+          </section>
+        </div>
+
+        {match.note && (
+          <section className="card match-note-card">
+            <h2 className="card-title">Murabbiy izohi</h2>
+            <p>{match.note}</p>
+          </section>
+        )}
       </div>
-
-      <div className="grid match-extra-grid">
-        <section className="card match-facts">
-          <h2 className="card-title">Qo'shimcha info</h2>
-          <p><span>Qizil karta</span><strong>{detailStat(match.red_cards)}</strong></p>
-          <p><span>Hakam</span><strong>{match.referee || '-'}</strong></p>
-          <p><span>Tomoshabin</span><strong>{match.attendance ? Number(match.attendance).toLocaleString() : '-'}</strong></p>
-        </section>
-        <section className="card match-possession">
-          <h2 className="card-title">To'p egallash</h2>
-          <div><strong>{fixture.leftPossession}%</strong><span>{fixture.left.name}</span><span>{fixture.right.name}</span><strong>{fixture.rightPossession}%</strong></div>
-          <div className="match-possession-track"><i style={{ width: `${fixture.leftPossession}%` }} /></div>
-        </section>
-      </div>
-
-      {match.note && (
-        <section className="card match-note-card">
-          <h2 className="card-title">Murabbiy izohi</h2>
-          <p>{match.note}</p>
-        </section>
-      )}
 
       {editing && (
         <Modal title="O'yinni tahrirlash" onClose={() => setEditing(false)}>
