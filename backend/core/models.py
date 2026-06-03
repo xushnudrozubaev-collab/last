@@ -460,3 +460,48 @@ class PlayerStatistic(TimeStampedModel):
 
     def __str__(self):
         return f"{self.player.full_name} statistikasi"
+
+
+class AIConversation(TimeStampedModel):
+    """AI Murabbiy suhbatlari"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="ai_conversations")
+    title = models.CharField(max_length=200, default="Yangi suhbat")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "AI suhbat"
+        verbose_name_plural = "AI suhbatlar"
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"
+
+    def get_message_count(self):
+        return self.messages.count()
+
+
+class AIMessage(TimeStampedModel):
+    """AI Murabbiy xabarlari"""
+    ROLE_USER = "user"
+    ROLE_ASSISTANT = "assistant"
+    ROLE_CHOICES = [
+        (ROLE_USER, "Foydalanuvchi"),
+        (ROLE_ASSISTANT, "AI Yordamchi"),
+    ]
+
+    conversation = models.ForeignKey(
+        AIConversation,
+        on_delete=models.CASCADE,
+        related_name="messages"
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    content = models.TextField()
+
+    class Meta:
+        ordering = ["created_at"]
+        verbose_name = "AI xabar"
+        verbose_name_plural = "AI xabarlar"
+
+    def __str__(self):
+        preview = self.content[:50] + "..." if len(self.content) > 50 else self.content
+        return f"{self.get_role_display()}: {preview}"

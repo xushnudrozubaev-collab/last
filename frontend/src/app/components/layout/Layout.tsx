@@ -1,7 +1,6 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import {
-  Menu,
   BarChart3,
   Users,
   Dumbbell,
@@ -10,6 +9,8 @@ import {
   FileText,
   Settings,
 } from 'lucide-react';
+import AIChatWidget from '../AIChatWidget';
+import '../AIChatWidget.css';
 
 interface LayoutProps {
   children: ReactNode;
@@ -19,6 +20,17 @@ export function Layout({ children }: LayoutProps) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
 
   const navItems = [
     { label: 'Boshqaruv paneli', path: '/', icon: BarChart3 },
@@ -32,6 +44,14 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="app-shell">
+      {open && (
+        <button
+          type="button"
+          className="sidebar-backdrop"
+          aria-label="Menyuni yopish"
+          onClick={() => setOpen(false)}
+        />
+      )}
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <div className="brand">
           <div className="brand-mark">
@@ -44,10 +64,13 @@ export function Layout({ children }: LayoutProps) {
         </div>
         <nav className="nav-list">
           {navItems.map((item) => {
-            const active = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
+            const active =
+              location.pathname === item.path ||
+              (item.path !== '/' && location.pathname.startsWith(item.path));
             return (
               <button
                 key={item.path}
+                type="button"
                 className={`nav-button ${active ? 'active' : ''}`}
                 onClick={() => {
                   navigate(item.path);
@@ -62,11 +85,10 @@ export function Layout({ children }: LayoutProps) {
         </nav>
       </aside>
       <div className="main-panel">
-        <button className="button icon ghost menu-toggle floating-menu-toggle" onClick={() => setOpen((value) => !value)} aria-label="Menyuni ochish">
-          <Menu size={20} />
-        </button>
         <main className="page-content">{children}</main>
       </div>
+      {/* AI chatbot — barcha sahifalarda ko'rinadi */}
+      <AIChatWidget />
     </div>
   );
 }

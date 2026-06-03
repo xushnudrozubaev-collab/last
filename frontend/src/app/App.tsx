@@ -1,17 +1,4 @@
-import { CSSProperties, createContext, FormEvent, ReactNode, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
-import {
-  BarElement,
-  BarController,
-  CategoryScale,
-  Chart as ChartJS,
-  Filler,
-  Legend,
-  LinearScale,
-  LineController,
-  LineElement,
-  PointElement,
-  Tooltip as ChartTooltip,
-} from 'chart.js';
+﻿import { CSSProperties, createContext, FormEvent, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import {
   Activity,
   ArrowLeft,
@@ -25,10 +12,8 @@ import {
   Edit,
   FileText,
   Filter,
-  Gauge,
   LogOut,
   MapPin,
-  Menu,
   MoreVertical,
   Plus,
   RefreshCw,
@@ -36,17 +21,12 @@ import {
   Search,
   Settings,
   ShieldAlert,
-  ShieldCheck,
-  Sparkles,
   Moon,
   Sun,
-  Target,
   Trash2,
-  TrendingUp,
   Trophy,
   UserRound,
   Users,
-  Zap,
   X,
 } from 'lucide-react';
 import {
@@ -54,7 +34,6 @@ import {
   Navigate,
   Route,
   Routes,
-  useLocation,
   useNavigate,
   useParams,
   useSearchParams,
@@ -68,7 +47,6 @@ import {
   GoalAssistPoint,
   Player,
   PlayerPayload,
-  PlayerProfile,
   ReportData,
   ReportParams,
   StatisticsData,
@@ -104,8 +82,6 @@ import RedesignedPlayerDetailPage from '../pages/PlayerDetailPage';
 
 const today = () => new Date().toISOString().slice(0, 10);
 const PROJECT_CLUB_NAME = 'Bunyodkor';
-
-ChartJS.register(BarController, LineController, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Filler, Legend, ChartTooltip);
 
 type Toast = { id: number; message: string; type: 'success' | 'error' };
 
@@ -184,7 +160,7 @@ function FullScreenLoading() {
   return (
     <div className="app-shell loading-state">
       <div>
-        <RefreshCw className="mx-auto" />
+        <RefreshCw style={{ margin: '0 auto', display: 'block' }} />
         <p>Yuklanmoqda...</p>
       </div>
     </div>
@@ -495,7 +471,7 @@ function DashboardPage() {
   type DashboardPeriod = 'week' | 'month' | 'season';
 
   const [data, setData] = useState<DashboardData | null>(null);
-  const [period, setPeriod] = useState<DashboardPeriod>('month');
+  const [period, setPeriod] = useState<DashboardPeriod>('season');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -633,20 +609,112 @@ function DashboardPage() {
         </div>
 
         <div className="dashboard-metric-grid">
-          {dashboardStats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <article className={`mini-metric ${stat.className}`} key={stat.label}>
-                <div className="mini-metric-icon"><Icon size={20} /></div>
-                <div className="mini-metric-copy">
-                  <span>{stat.label}</span>
-                  <strong>{stat.value}</strong>
-                  <p>{stat.note}</p>
-                  <small className={`mini-trend ${stat.trendTone}`}>{stat.trendTone === 'down' ? '↘' : '↗'} {stat.trend}</small>
-                </div>
-              </article>
-            );
-          })}
+          {/* KARTA 1 — JAMOA */}
+          <article className="mini-metric metric-blue">
+            <div className="dmc-header">
+              <Users size={16} className="dmc-icon" />
+              <span className="dmc-label">JAMOA</span>
+            </div>
+            <strong className="dmc-value">{data.total_players}</strong>
+            <p className="dmc-note">Jami futbolchilar</p>
+            <div className="dmc-divider" />
+            <div className="dmc-rows">
+              <div className="dmc-row">
+                <Trophy size={13} />
+                <span>O'yinlar</span>
+                <b>{periodStats?.matches_count ?? data.recent_matches.length}</b>
+              </div>
+              <div className="dmc-row">
+                <Activity size={13} />
+                <span>Gollar</span>
+                <b>{periodStats?.goals ?? 0}</b>
+              </div>
+            </div>
+          </article>
+
+          {/* KARTA 2 — MASHG'ULOTLAR */}
+          <article className="mini-metric metric-green">
+            <div className="dmc-header">
+              <Dumbbell size={16} className="dmc-icon" />
+              <span className="dmc-label">MASHG'ULOTLAR</span>
+            </div>
+            <strong className="dmc-value">{periodStats?.trainings_count ?? data.recent_trainings.length}</strong>
+            <p className="dmc-note">{data.period_label || 'Tanlangan davr'} bo'yicha</p>
+            <div className="dmc-divider" />
+            <div className="dmc-rows">
+              <div className="dmc-row">
+                <Users size={13} />
+                <span>Davomat</span>
+                <b>{periodStats?.average_attendance_percent ?? data.team_attendance_percent}%</b>
+              </div>
+              <div className="dmc-row">
+                <BarChart3 size={13} />
+                <span>O'rt. baho</span>
+                <b>{periodStats?.average_rating ?? data.team_average_rating}</b>
+              </div>
+            </div>
+          </article>
+
+          {/* KARTA 3 — NATIJALAR */}
+          <article className="mini-metric metric-purple">
+            <div className="dmc-header">
+              <Trophy size={16} className="dmc-icon" />
+              <span className="dmc-label">NATIJALAR</span>
+            </div>
+            <strong className="dmc-value" style={{ fontSize: 20 }}>
+              {periodStats?.match_record.wins ?? 0}G &nbsp;
+              {periodStats?.match_record.draws ?? 0}D &nbsp;
+              {periodStats?.match_record.losses ?? 0}M
+            </strong>
+            <p className="dmc-note">G'alaba / Durang / Mag'lubiyat</p>
+            <div className="dmc-divider" />
+            <div className="dmc-rows">
+              <div className="dmc-row">
+                <span style={{ color: '#4ade80' }}>●</span>
+                <span>G'alaba</span>
+                <b>{periodStats?.match_record.wins ?? 0}</b>
+              </div>
+              <div className="dmc-row">
+                <span style={{ color: '#fbbf24' }}>●</span>
+                <span>Durang</span>
+                <b>{periodStats?.match_record.draws ?? 0}</b>
+              </div>
+              <div className="dmc-row">
+                <span style={{ color: '#f87171' }}>●</span>
+                <span>Mag'lubiyat</span>
+                <b>{periodStats?.match_record.losses ?? 0}</b>
+              </div>
+            </div>
+          </article>
+
+          {/* KARTA 4 — HOLAT */}
+          <article className="mini-metric metric-cyan">
+            <div className="dmc-header">
+              <ShieldAlert size={16} className="dmc-icon" />
+              <span className="dmc-label">HOLAT</span>
+            </div>
+            <strong className="dmc-value" style={{ fontSize: 18 }}>
+              {shortDisplayName(data.top_recent_active_player?.player_name) || '—'}
+            </strong>
+            <p className="dmc-note">
+              {data.top_recent_active_player
+                ? `Faollik: ${data.top_recent_active_player.average_activity}/10`
+                : "Ma'lumot yo'q"}
+            </p>
+            <div className="dmc-divider" />
+            <div className="dmc-rows">
+              <div className="dmc-row">
+                <span style={{ color: '#4ade80' }}>●</span>
+                <span>Jarohat</span>
+                <b>{periodStats?.injury_related_count ?? data.injured_players.length}</b>
+              </div>
+              <div className="dmc-row">
+                <Users size={13} />
+                <span>Eng faol</span>
+                <b>{shortDisplayName(data.top_recent_active_player?.player_name) || '—'}</b>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 
@@ -779,585 +847,6 @@ function DashboardPage() {
       </section>
 
     </Layout>
-  );
-}
-
-type PremiumTrendTone = 'up' | 'down' | 'flat';
-
-function premiumTrendText(value?: number, suffix = '%') {
-  const current = Number(value || 0);
-  if (!current) return "O'zgarish yo'q";
-  return `${current > 0 ? '+' : ''}${current}${suffix} davrga nisbatan`;
-}
-
-function premiumTrendTone(value?: number): PremiumTrendTone {
-  const current = Number(value || 0);
-  if (current < 0) return 'down';
-  if (current > 0) return 'up';
-  return 'flat';
-}
-
-function PremiumDashboardPage() {
-  type DashboardPeriod = 'week' | 'month' | 'season';
-
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [period, setPeriod] = useState<DashboardPeriod>('month');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
-
-  const load = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const dashboardData = await dashboardAPI.get(period);
-      setData(dashboardData);
-      playersAPI.list()
-        .then(setPlayers)
-        .catch(() => setPlayers([]));
-    } catch (err) {
-      setError(getApiError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    load();
-  }, [period]);
-
-  if (loading && !data) return <Layout><PremiumDashboardSkeleton /></Layout>;
-  if (error) return <Layout><ErrorState text={error} retry={load} /></Layout>;
-  if (!data) return <Layout><EmptyState title="Ma'lumot topilmadi" /></Layout>;
-
-  const periodStats = data.period_stats;
-  const periodOptions: Array<{ value: DashboardPeriod; label: string }> = [
-    { value: 'week', label: 'Bu hafta' },
-    { value: 'month', label: 'Bu oy' },
-    { value: 'season', label: 'Bu mavsum' },
-  ];
-  const completedMatches = data.period_completed_matches?.length
-    ? data.period_completed_matches
-    : data.recent_completed_matches?.length
-      ? data.recent_completed_matches
-      : data.recent_matches;
-  const periodTrainings = data.period_trainings?.length ? data.period_trainings : data.recent_trainings;
-  const periodActivePlayers = data.period_active_players?.length ? data.period_active_players : null;
-  const matchAnalytics = buildPremiumMatchAnalytics(completedMatches, periodStats?.match_record);
-  const attendanceSeries = buildPremiumAttendanceSeries(periodTrainings);
-  const workloadSeries = buildPremiumWorkloadSeries(periodTrainings);
-  const performanceSeries = buildPremiumPerformanceSeries(completedMatches);
-  const activePlayers = buildPremiumActivePlayers(players, data.top_recent_active_player);
-  const activeChartLabels = periodActivePlayers
-    ? periodActivePlayers.slice(0, 5).map((player) => shortDisplayName(player.full_name))
-    : activePlayers.map((player) => shortDisplayName(player.full_name));
-  const activeChartValues = periodActivePlayers
-    ? periodActivePlayers.slice(0, 5).map((player) => percent(player.score))
-    : activePlayers.map((player) => player.score);
-  const weeklySummary = weeklyAttendanceSummary(data.recent_trainings);
-  const kpis: PremiumKpiCardProps[] = [
-    {
-      icon: Users,
-      label: 'Futbolchilar',
-      value: data.total_players,
-      subtitle: "Jami ro'yxatda",
-      accent: 'blue',
-      progress: percent((data.total_players / 25) * 100),
-      metric: `${players.filter((player) => Number(player.attendance_percent || 0) >= 80).length} faol`,
-      trend: 'Tarkib nazorati',
-      trendTone: 'flat',
-    },
-    {
-      icon: Dumbbell,
-      label: "Mashg'ulotlar",
-      value: periodStats?.trainings_count ?? data.recent_trainings.length,
-      subtitle: `${data.period_label || 'Tanlangan davr'} bo'yicha`,
-      accent: 'green',
-      progress: percent(((periodStats?.trainings_count ?? data.recent_trainings.length) / 18) * 100),
-      metric: `${data.recent_trainings.slice(0, 7).length} so'nggi yozuv`,
-      trend: premiumTrendText(periodStats?.trends.trainings),
-      trendTone: premiumTrendTone(periodStats?.trends.trainings),
-    },
-    {
-      icon: Activity,
-      label: "O'rtacha davomat",
-      value: `${periodStats?.average_attendance_percent ?? data.team_attendance_percent}%`,
-      subtitle: `${data.period_label || 'Davr'} faol yozuvlari`,
-      accent: 'yellow',
-      progress: periodStats?.average_attendance_percent ?? data.team_attendance_percent,
-      metric: `${weeklySummary.average}% haftalik`,
-      trend: premiumTrendText(periodStats?.trends.attendance),
-      trendTone: premiumTrendTone(periodStats?.trends.attendance),
-    },
-    {
-      icon: BarChart3,
-      label: "O'rtacha reyting",
-      value: periodStats?.average_rating ?? data.team_average_rating,
-      subtitle: `${data.period_label || 'Davr'} mashg'ulotlari`,
-      accent: 'red',
-      progress: percent(Number(periodStats?.average_rating ?? data.team_average_rating) * 10),
-      metric: '10 ballik tizim',
-      trend: premiumTrendText(periodStats?.trends.rating, ''),
-      trendTone: premiumTrendTone(periodStats?.trends.rating),
-    },
-  ];
-
-  return (
-    <Layout>
-      <div className="premium-dashboard">
-        <PageHeader
-          title="Boshqaruv paneli"
-          action={
-            <div className="dashboard-period premium-period">
-              {periodOptions.map((option) => (
-                <button
-                  className={period === option.value ? 'active' : ''}
-                  key={option.value}
-                  onClick={() => setPeriod(option.value)}
-                  type="button"
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          }
-        />
-
-        <section className="premium-top-analytics">
-          <div className="container-fluid p-0">
-            <div className="row g-3">
-              <div className="col-12 col-xl-4">
-                <PremiumTeamFormPanel analytics={matchAnalytics} />
-              </div>
-              <div className="col-12 col-xl-8">
-                <div className="row g-3">
-                  <div className="col-12 col-lg-6">
-                    <PremiumDashboardChart title="Natijalar dinamikasi" subtitle="So'nggi o'yinlar sifati" type="line" labels={performanceSeries.labels} values={performanceSeries.values} accent="#3B82F6" />
-                  </div>
-                  <div className="col-12 col-lg-6">
-                    <PremiumDashboardChart title="Davomat grafigi" subtitle="Mashg'ulot davomat dinamikasi" type="line" labels={attendanceSeries.labels} values={attendanceSeries.values} accent="#22C55E" />
-                  </div>
-                  <div className="col-12 col-lg-6">
-                    <PremiumDashboardChart title="Haftalik yuklama" subtitle="Yuklama indeksi" type="bar" labels={workloadSeries.labels} values={workloadSeries.values} accent="#F59E0B" />
-                  </div>
-                  <div className="col-12 col-lg-6">
-                    <PremiumDashboardChart title="Futbolchilar faolligi" subtitle="Eng faol futbolchilar" type="bar" labels={activeChartLabels} values={activeChartValues} accent="#EF4444" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="premium-kpi-grid">
-          {kpis.map((kpi) => <PremiumKpiCard key={kpi.label} {...kpi} />)}
-        </section>
-
-        <section className="premium-bottom-grid">
-          <PremiumActivePlayersPanel players={activePlayers} onOpen={(id) => navigate(`/futbolchilar/${id}`)} />
-          <PremiumUpcomingMatchesPanel matches={data.recent_matches} onOpen={() => navigate('/oyinlar')} />
-          <PremiumRecentTrainingsPanel trainings={data.recent_trainings} onOpen={() => navigate('/mashgulotlar')} />
-          <PremiumWarningsPanel warnings={data.warnings} injuredPlayers={data.injured_players} />
-        </section>
-      </div>
-    </Layout>
-  );
-}
-
-function buildPremiumMatchAnalytics(matches: Match[], fallback?: { wins: number; draws: number; losses: number }) {
-  const played = matches.filter((match) => match.home_score !== null && match.away_score !== null);
-  const base = played.reduce(
-    (acc, match) => {
-      const result = getMatchResultForTeam(match);
-      if (result === "G'alaba") acc.wins += 1;
-      if (result === 'Durang') acc.draws += 1;
-      if (result === "Mag'lubiyat") acc.losses += 1;
-      return acc;
-    },
-    { wins: 0, draws: 0, losses: 0 },
-  );
-  const counts = played.length ? base : { wins: fallback?.wins ?? 0, draws: fallback?.draws ?? 0, losses: fallback?.losses ?? 0 };
-  const total = counts.wins + counts.draws + counts.losses || 1;
-  return {
-    ...counts,
-    total,
-    winRate: Math.round((counts.wins / total) * 100),
-    recentForm: played.slice(0, 5).map((match) => getMatchResultForTeam(match)),
-  };
-}
-
-function buildPremiumAttendanceSeries(trainings: Training[]) {
-  const items = [...trainings].sort((a, b) => new Date(a.training_date).getTime() - new Date(b.training_date).getTime()).slice(-7);
-  return {
-    labels: items.length ? items.map((item) => formatDateShort(item.training_date)) : ['1', '2', '3', '4', '5'],
-    values: items.length ? items.map((item) => Math.round(Number(item.attendance_percent || 0))) : [0, 0, 0, 0, 0],
-  };
-}
-
-function buildPremiumWorkloadSeries(trainings: Training[]) {
-  const items = [...trainings].sort((a, b) => new Date(a.training_date).getTime() - new Date(b.training_date).getTime()).slice(-7);
-  return {
-    labels: items.length ? items.map((item) => formatDateShort(item.training_date)) : ['1', '2', '3', '4', '5'],
-    values: items.length
-      ? items.map((item) => percent(Math.round((Number(item.duration_minutes || 90) / 120) * 58 + (Number(item.attendance_percent || 0) / 100) * 42)))
-      : [0, 0, 0, 0, 0],
-  };
-}
-
-function buildPremiumPerformanceSeries(matches: Match[]) {
-  const items = [...matches].filter((match) => match.home_score !== null && match.away_score !== null).slice(0, 7).reverse();
-  const values: Record<MatchResultLabel, number> = {
-    "G'alaba": 92,
-    Durang: 58,
-    "Mag'lubiyat": 24,
-    Rejalashtirilgan: 0,
-  };
-  return {
-    labels: items.length ? items.map((item) => formatDateShort(item.match_date)) : ['1', '2', '3', '4', '5'],
-    values: items.length ? items.map((item) => values[getMatchResultForTeam(item)]) : [0, 0, 0, 0, 0],
-  };
-}
-
-type PremiumActivePlayer = Player & {
-  score: number;
-  formTrend: number;
-};
-
-function buildPremiumActivePlayers(players: Player[], featured?: DashboardData['top_recent_active_player']): PremiumActivePlayer[] {
-  return players
-    .map((player) => {
-      const ratingScore = Number(player.average_rating || 0) * 10;
-      const attendanceScore = Number(player.attendance_percent || 0);
-      const matchScore = Math.min(Number(player.game_statistics?.matches_played || 0) * 7, 35);
-      const score = percent(Math.round(ratingScore * 0.45 + attendanceScore * 0.4 + matchScore));
-      return { ...player, score, formTrend: Math.round(score / 8) };
-    })
-    .sort((a, b) => {
-      if (featured?.player_id === a.id) return -1;
-      if (featured?.player_id === b.id) return 1;
-      return b.score - a.score;
-    })
-    .slice(0, 5);
-}
-
-type PremiumKpiCardProps = {
-  icon: typeof Users;
-  label: string;
-  value: string | number;
-  subtitle: string;
-  accent: 'blue' | 'green' | 'yellow' | 'red';
-  progress: number;
-  metric: string;
-  trend: string;
-  trendTone?: PremiumTrendTone;
-};
-
-function PremiumKpiCard({ icon: Icon, label, value, subtitle, accent, progress, metric, trend, trendTone: tone = 'up' }: PremiumKpiCardProps) {
-  return (
-    <article className={`premium-kpi-card ${accent}`}>
-      <div className="premium-kpi-top">
-        <span className="premium-kpi-icon"><Icon size={22} /></span>
-        <span className={`premium-trend ${tone}`}>{trend}</span>
-      </div>
-      <span className="premium-kpi-label">{label}</span>
-      <strong>{value}</strong>
-      <p>{subtitle}</p>
-      <div className="premium-kpi-progress"><i style={{ width: `${percent(progress)}%` }} /></div>
-      <small>{metric}</small>
-    </article>
-  );
-}
-
-function PremiumTeamFormPanel({ analytics }: { analytics: ReturnType<typeof buildPremiumMatchAnalytics> }) {
-  return (
-    <article className="premium-panel team-form-panel">
-      <div className="premium-panel-head">
-        <div>
-          <span className="panel-kicker"><Trophy size={15} /> Jamoa formasi</span>
-          <h2>Jamoa formasi</h2>
-        </div>
-        <span className="live-pill"><Activity size={14} /> Kuzatuv</span>
-      </div>
-      <div className="team-form-core">
-        <div className="team-form-ring" style={{ '--win-rate': `${analytics.winRate}%` } as CSSProperties}>
-          <strong>{analytics.winRate}%</strong>
-          <span>G'alaba foizi</span>
-        </div>
-        <div className="team-form-record">
-          <span><b>{analytics.wins}</b> G'alaba</span>
-          <span><b>{analytics.draws}</b> Durang</span>
-          <span><b>{analytics.losses}</b> Mag'lubiyat</span>
-        </div>
-      </div>
-      <div className="recent-form-strip">
-        <span>So'nggi 10 yakunlangan o'yin</span>
-        <div>
-          {(analytics.recentForm.length ? analytics.recentForm : ['Rejalashtirilgan']).map((result, index) => (
-            <i className={`form-dot ${matchResultTone(result as MatchResultLabel) || 'empty'}`} key={`${result}-${index}`}>
-              {result === "G'alaba" ? 'G' : result === 'Durang' ? 'D' : result === "Mag'lubiyat" ? 'M' : '-'}
-            </i>
-          ))}
-        </div>
-      </div>
-      <div className="team-form-mini">
-        <span><Target size={16} /> Natijalar tahlili</span>
-        <strong>{analytics.total} ta o'yin tahlil qilindi</strong>
-      </div>
-    </article>
-  );
-}
-
-function PremiumDashboardChart({
-  title,
-  subtitle,
-  labels,
-  values,
-  accent,
-  type,
-}: {
-  title: string;
-  subtitle: string;
-  labels: string[];
-  values: number[];
-  accent: string;
-  type: 'line' | 'bar';
-}) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const chartRef = useRef<ChartJS | null>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const context = canvas.getContext('2d');
-    if (!context) return;
-
-    chartRef.current?.destroy();
-    const gradient = context.createLinearGradient(0, 0, 0, 240);
-    gradient.addColorStop(0, `${accent}66`);
-    gradient.addColorStop(1, `${accent}08`);
-
-    chartRef.current = new ChartJS(context, {
-      type,
-      data: {
-        labels,
-        datasets: [
-          {
-            label: title,
-            data: values,
-            borderColor: accent,
-            backgroundColor: type === 'line' ? gradient : `${accent}99`,
-            hoverBackgroundColor: accent,
-            fill: type === 'line',
-            tension: 0.42,
-            borderWidth: 2,
-            pointRadius: type === 'line' ? 3 : 0,
-            pointHoverRadius: 5,
-            borderRadius: type === 'bar' ? 10 : 0,
-            barThickness: type === 'bar' ? 18 : undefined,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: { duration: 700, easing: 'easeOutQuart' },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#0B1220',
-            titleColor: '#F1F5F9',
-            bodyColor: '#CBD5E1',
-            borderColor: '#334155',
-            borderWidth: 1,
-            padding: 10,
-          },
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: '#94A3B8', font: { size: 11 } },
-            border: { display: false },
-          },
-          y: {
-            min: 0,
-            max: 100,
-            grid: { color: 'rgba(148, 163, 184, 0.13)' },
-            ticks: { color: '#94A3B8', font: { size: 11 }, stepSize: 25 },
-            border: { display: false },
-          },
-        },
-      },
-    });
-
-    return () => chartRef.current?.destroy();
-  }, [accent, labels, title, type, values]);
-
-  return (
-    <article className="premium-panel analytics-chart-card">
-      <div className="premium-panel-head compact">
-        <div>
-          <span className="panel-kicker"><TrendingUp size={15} /> Statistik tahlil</span>
-          <h2>{title}</h2>
-          <p>{subtitle}</p>
-        </div>
-      </div>
-      <div className="chart-canvas-wrap">
-        <canvas ref={canvasRef} />
-      </div>
-    </article>
-  );
-}
-
-function PremiumActivePlayersPanel({ players, onOpen }: { players: PremiumActivePlayer[]; onOpen: (id: number) => void }) {
-  const featured = players[0];
-  return (
-    <article className="premium-panel active-player-panel">
-      <div className="premium-panel-head">
-        <div>
-          <span className="panel-kicker"><Zap size={15} /> Faol futbolchilar</span>
-          <h2>Eng faol futbolchilar</h2>
-        </div>
-        <button className="panel-action" type="button" onClick={() => featured && onOpen(featured.id)}>Profil</button>
-      </div>
-      {featured ? (
-        <button className="featured-player-card" type="button" onClick={() => onOpen(featured.id)}>
-          <span className="featured-player-avatar">
-            {featured.photo_url ? <img src={featured.photo_url} alt={featured.full_name} /> : getPlayerInitials(featured.full_name)}
-          </span>
-          <span className="featured-player-copy">
-            <strong>{shortDisplayName(featured.full_name)}</strong>
-                <small>{featured.position_display} &bull; {Number(featured.average_rating || 0).toFixed(1)} reyting</small>
-            <span className="performance-bar"><i style={{ width: `${featured.score}%` }} /></span>
-                <em>{featured.formTrend > 0 ? '+' : ''}{featured.formTrend} trend</em>
-          </span>
-        </button>
-      ) : (
-        <p className="muted">Futbolchi ma'lumoti yo'q.</p>
-      )}
-      <div className="active-player-list">
-        {players.slice(0, 4).map((player) => (
-          <button type="button" key={player.id} onClick={() => onOpen(player.id)}>
-            <span>{shortDisplayName(player.full_name)}</span>
-            <i>{player.position_display}</i>
-                <strong>{(player.score / 10).toFixed(1)}</strong>
-          </button>
-        ))}
-      </div>
-    </article>
-  );
-}
-
-function PremiumUpcomingMatchesPanel({ matches, onOpen }: { matches: Match[]; onOpen: () => void }) {
-  const upcoming = matches.filter((match) => match.status === 'upcoming').slice(0, 4);
-  const rows = upcoming.length ? upcoming : matches.slice(0, 4);
-  return (
-    <article className="premium-panel bottom-monitor-card">
-      <div className="premium-panel-head">
-        <div>
-          <span className="panel-kicker"><CalendarDays size={15} /> Taqvim</span>
-          <h2>Kutilayotgan o'yinlar</h2>
-        </div>
-        <button className="panel-action" type="button" onClick={onOpen}>Barchasi</button>
-      </div>
-      <div className="premium-list">
-        {rows.length ? rows.map((match) => {
-          const fixture = getProjectClubFixture(match);
-          return (
-            <article className="premium-list-row" key={match.id}>
-              <span className="list-row-icon blue"><Trophy size={18} /></span>
-              <div>
-                <strong>{fixture.left.name} vs {fixture.right.name}</strong>
-                <p>{formatDateShort(match.match_date)} • {match.stadium}</p>
-              </div>
-              <span className={`status-chip ${match.status}`}>{match.status_display}</span>
-            </article>
-          );
-        }) : <p className="muted">O'yinlar hali kiritilmagan.</p>}
-      </div>
-    </article>
-  );
-}
-
-function PremiumRecentTrainingsPanel({ trainings, onOpen }: { trainings: Training[]; onOpen: () => void }) {
-  return (
-    <article className="premium-panel bottom-monitor-card">
-      <div className="premium-panel-head">
-        <div>
-          <span className="panel-kicker"><Dumbbell size={15} /> Mashg'ulot yuklamasi</span>
-          <h2>So'nggi mashg'ulotlar</h2>
-        </div>
-        <button className="panel-action" type="button" onClick={onOpen}>Barchasi</button>
-      </div>
-      <div className="premium-list">
-        {trainings.slice(0, 4).map((training) => (
-          <article className="premium-list-row" key={training.id}>
-            <span className="list-row-icon green"><Activity size={18} /></span>
-            <div>
-              <strong>{training.title}</strong>
-              <p>{formatDateShort(training.training_date)} • {training.duration_display}</p>
-            </div>
-            <span className="metric-chip">{Math.round(training.attendance_percent)}%</span>
-          </article>
-        ))}
-        {!trainings.length && <p className="muted">Mashg'ulotlar hali kiritilmagan.</p>}
-      </div>
-    </article>
-  );
-}
-
-function PremiumWarningsPanel({
-  warnings,
-  injuredPlayers,
-}: {
-  warnings: DashboardData['warnings'];
-  injuredPlayers: DashboardData['injured_players'];
-}) {
-  const rows = warnings.slice(0, 3);
-  return (
-    <article className="premium-panel bottom-monitor-card warning-monitor-card">
-      <div className="premium-panel-head">
-        <div>
-          <span className="panel-kicker"><ShieldCheck size={15} /> Xavf nazorati</span>
-          <h2>Ogohlantirishlar</h2>
-        </div>
-        <span className="risk-count">{rows.length + injuredPlayers.length}</span>
-      </div>
-      <div className="premium-list">
-        {rows.length ? rows.map((item, index) => (
-          <article className="premium-list-row" key={`${item.message}-${index}`}>
-            <span className="list-row-icon red"><ShieldAlert size={18} /></span>
-            <div>
-              <strong>{item.type}</strong>
-              <p>{item.message}</p>
-            </div>
-          </article>
-        )) : <p className="muted">Hozircha muhim ogohlantirish yo'q.</p>}
-        {injuredPlayers.slice(0, 2).map((player) => (
-          <article className="premium-list-row" key={player.player_id}>
-            <span className="list-row-icon yellow"><Gauge size={18} /></span>
-            <div>
-              <strong>{player.player_name}</strong>
-              <p>{player.injury_status} • {player.note || player.training}</p>
-            </div>
-          </article>
-        ))}
-      </div>
-    </article>
-  );
-}
-
-function PremiumDashboardSkeleton() {
-  return (
-    <div className="premium-dashboard dashboard-skeleton">
-      <div className="skeleton-line wide" />
-      <div className="skeleton-grid">
-        {Array.from({ length: 4 }).map((_, index) => <span key={index} />)}
-      </div>
-      <div className="skeleton-grid small">
-        {Array.from({ length: 4 }).map((_, index) => <span key={index} />)}
-      </div>
-    </div>
   );
 }
 
@@ -1675,145 +1164,6 @@ function PlayersPage() {
   );
 }
 
-function PlayerDetailPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [profile, setProfile] = useState<PlayerProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const load = async () => {
-    if (!id) return;
-    setLoading(true);
-    setError('');
-    try {
-      setProfile(await playersAPI.profile(Number(id)));
-    } catch (err) {
-      setError(getApiError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    load();
-  }, [id]);
-
-  if (loading) return <Layout><div className="loading-state">Yuklanmoqda...</div></Layout>;
-  if (error) return <Layout><ErrorState text={error} retry={load} /></Layout>;
-  if (!profile) return <Layout><EmptyState title="Futbolchi topilmadi" /></Layout>;
-
-  const points = profile.progress.length
-    ? profile.progress
-        .map((item, index) => {
-          const x = 20 + (index * 260) / Math.max(profile.progress.length - 1, 1);
-          const y = 190 - (Number(item.rating) / 10) * 160;
-          return `${x},${y}`;
-        })
-        .join(' ')
-    : '';
-
-  return (
-    <Layout>
-      <PageHeader
-        title={profile.player.full_name}
-        description={`${profile.player.position_display} | #${profile.player.shirt_number} | ${profile.player.nationality}`}
-        action={
-          <button className="button ghost" onClick={() => navigate('/futbolchilar')}>
-            <ArrowLeft size={18} /> Orqaga qaytish
-          </button>
-        }
-      />
-      <div className="grid grid-4">
-        <StatCard icon={Activity} label="Qatnashuv" value={`${profile.stats.attendance_percent}%`} />
-        <StatCard icon={BarChart3} label="O'rtacha baho" value={profile.stats.average_rating || 0} tone="green" />
-        <StatCard icon={CalendarDays} label="Mashg'ulot tarixi" value={profile.stats.total_marked_trainings || 0} />
-        <StatCard icon={Trophy} label="O'yin statistikasi" value={profile.game_statistics.matches_played} tone="yellow" />
-      </div>
-      <div className="grid grid-2" style={{ marginTop: 18 }}>
-        <div className="card">
-          <h2 className="card-title">Umumiy ma'lumotlar</h2>
-          <div className="grid" style={{ marginTop: 14 }}>
-            <div className="profile-row">
-              <img className="avatar" src={profile.player.photo_url} alt={profile.player.full_name} />
-              <div>
-                <strong>{profile.player.full_name}</strong>
-                <div className="small muted">{profile.player.short_note || "Murabbiy izohi kiritilmagan"}</div>
-              </div>
-            </div>
-            <div className="grid grid-2">
-              <span>Yosh: <strong>{profile.player.age}</strong></span>
-              <span>Bo'yi: <strong>{profile.player.height} m</strong></span>
-              <span>Vazni: <strong>{profile.player.weight} kg</strong></span>
-              <span>Qo'shilgan sana: <strong>{formatDate(profile.player.join_date)}</strong></span>
-            </div>
-          </div>
-        </div>
-        <div className="card">
-          <h2 className="card-title">Rivojlanish grafigi</h2>
-          {points ? (
-            <svg className="chart" viewBox="0 0 300 220" preserveAspectRatio="none">
-              <polyline points={points} />
-              {profile.progress.map((item, index) => {
-                const x = 20 + (index * 260) / Math.max(profile.progress.length - 1, 1);
-                const y = 190 - (Number(item.rating) / 10) * 160;
-                return <circle key={item.training_id} cx={x} cy={y} r={5} />;
-              })}
-            </svg>
-          ) : (
-            <EmptyState title="Grafik uchun ma'lumot yo'q" />
-          )}
-        </div>
-      </div>
-      <div className="grid grid-2" style={{ marginTop: 18 }}>
-        <div className="card">
-          <h2 className="card-title">Mashg'ulot tarixi</h2>
-          <div className="table-wrap" style={{ marginTop: 14 }}>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Sana</th>
-                  <th>Mashg'ulot</th>
-                  <th>Davomad</th>
-                  <th>Holat</th>
-                  <th>Baho</th>
-                </tr>
-              </thead>
-              <tbody>
-                {profile.training_history.map((record) => (
-                  <tr key={`${record.training}-${record.player}`}>
-                    <td>{formatDate(record.training_detail?.training_date)}</td>
-                    <td>{record.training_detail?.title}</td>
-                    <td>{record.attendance_status_display}</td>
-                    <td>{record.physical_condition_display}</td>
-                    <td>{record.rating}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div className="card">
-          <h2 className="card-title">Murabbiy izohlari va o'yin statistikasi</h2>
-          <div className="grid grid-3" style={{ marginTop: 14 }}>
-            <StatCard icon={Trophy} label="O'yin" value={profile.game_statistics.matches_played} />
-            <StatCard icon={Activity} label="Gol" value={profile.game_statistics.goals} tone="green" />
-            <StatCard icon={ClipboardList} label="Assist" value={profile.game_statistics.assists} tone="yellow" />
-          </div>
-          <div className="grid" style={{ marginTop: 14 }}>
-            {profile.comments.length ? profile.comments.map((item) => (
-              <div className="card" key={`${item.date}-${item.training}`}>
-                <strong>{item.training}</strong>
-                <p className="small muted">{formatDate(item.date)}</p>
-                <p>{item.comment}</p>
-              </div>
-            )) : <EmptyState title="Izoh kiritilmagan" />}
-          </div>
-        </div>
-      </div>
-    </Layout>
-  );
-}
 
 function trainingFormDefaults(): Partial<Training> {
   return {
@@ -1879,152 +1229,6 @@ function TrainingForm({
   );
 }
 
-function TrainingsPage() {
-  const [trainings, setTrainings] = useState<Training[]>([]);
-  const [search, setSearch] = useState('');
-  const [trainingType, setTrainingType] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [editing, setEditing] = useState<Training | null>(null);
-  const [deleting, setDeleting] = useState<Training | null>(null);
-  const notify = useToast();
-  const navigate = useNavigate();
-
-  const load = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      setTrainings(await trainingsAPI.list({ search, training_type: trainingType, date: dateFilter }));
-    } catch (err) {
-      setError(getApiError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    load();
-  }, [trainingType, dateFilter]);
-
-  const save = async (data: Partial<Training>) => {
-    try {
-      if (editing) {
-        await trainingsAPI.update(editing.id, data);
-        notify("Mashg'ulot yangilandi.");
-      } else {
-        await trainingsAPI.create(data);
-        notify("Mashg'ulot yaratildi.");
-      }
-      setCreating(false);
-      setEditing(null);
-      load();
-    } catch (err) {
-      notify(getApiError(err), 'error');
-    }
-  };
-
-  const remove = async () => {
-    if (!deleting) return;
-    try {
-      await trainingsAPI.remove(deleting.id);
-      notify("Mashg'ulot o'chirildi.");
-      setDeleting(null);
-      load();
-    } catch (err) {
-      notify(getApiError(err), 'error');
-    }
-  };
-
-  return (
-    <Layout>
-      <PageHeader
-        title="Mashg'ulotlar"
-        description="Mashg'ulot yarating, futbolchilar holatini kiriting va saqlangan yozuvlarning statistikaga ta'sirini kuzating."
-        action={<button className="button primary" onClick={() => setCreating(true)}><Plus size={18} /> Qo'shish</button>}
-      />
-      <form className="toolbar" onSubmit={(event) => { event.preventDefault(); load(); }}>
-        <input className="input" style={{ flex: 1, minWidth: 240 }} value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Mashg'ulot nomi yoki joy bo'yicha qidirish" />
-        <select className="select" style={{ width: 200 }} value={trainingType} onChange={(event) => setTrainingType(event.target.value)}>
-          {trainingTypes.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-        </select>
-        <input className="input" style={{ width: 180 }} type="date" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)} />
-        <button className="button"><Filter size={18} /> Filterlash</button>
-        <button type="button" className="button ghost" onClick={load}><RefreshCw size={18} /> Yangilash</button>
-      </form>
-      <div className="grid grid-4">
-        <StatCard icon={Dumbbell} label="Jami mashg'ulot" value={trainings.length} />
-        <StatCard icon={CalendarDays} label="Bugungi" value={trainings.filter((item) => item.training_date === today()).length} tone="green" />
-        <StatCard icon={Users} label="O'rtacha qatnashuv" value={`${Math.round(trainings.reduce((sum, item) => sum + item.attendance_percent, 0) / Math.max(trainings.length, 1))}%`} />
-        <StatCard icon={BarChart3} label="O'rtacha baho" value={(trainings.reduce((sum, item) => sum + Number(item.average_rating || 0), 0) / Math.max(trainings.length, 1)).toFixed(1)} tone="yellow" />
-      </div>
-      <div className="card" style={{ marginTop: 18 }}>
-        <div className="card-header">
-          <h2 className="card-title">Mashg'ulotlar ro'yxati</h2>
-        </div>
-        {loading ? (
-          <div className="loading-state">Yuklanmoqda...</div>
-        ) : error ? (
-          <ErrorState text={error} retry={load} />
-        ) : trainings.length ? (
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Nomi</th>
-                  <th>Sana</th>
-                  <th>Vaqt</th>
-                  <th>Turi</th>
-                  <th>Qatnashuv</th>
-                  <th>Baho</th>
-                  <th>Amallar</th>
-                </tr>
-              </thead>
-              <tbody>
-                {trainings.map((training) => (
-                  <tr key={training.id}>
-                    <td>
-                      <strong>{training.title}</strong>
-                      <div className="small muted">{training.location}</div>
-                    </td>
-                    <td>{formatDate(training.training_date)}</td>
-                    <td>{formatTime(training.start_time)} - {formatTime(training.end_time)}</td>
-                    <td><span className="badge blue">{training.training_type_display}</span></td>
-                    <td>{training.attendance_display}<Progress value={training.attendance_percent} /></td>
-                    <td>{training.average_rating || 0}</td>
-                    <td>
-                      <div className="toolbar" style={{ margin: 0 }}>
-                        <button className="button icon ghost" title="Batafsil ko'rish" onClick={() => navigate(`/mashgulotlar/${training.id}`)}><ClipboardList size={17} /></button>
-                        <button className="button icon ghost" title="Tahrirlash" onClick={() => setEditing(training)}><Edit size={17} /></button>
-                        <button className="button icon ghost" title="O'chirish" onClick={() => setDeleting(training)}><Trash2 size={17} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <EmptyState title="Mashg'ulot topilmadi" text="Birinchi mashg'ulotni qo'shing." />
-        )}
-      </div>
-      {(creating || editing) && (
-        <Modal title={editing ? "Mashg'ulotni tahrirlash" : "Mashg'ulot qo'shish"} onClose={() => { setCreating(false); setEditing(null); }}>
-          <TrainingForm initial={editing || trainingFormDefaults()} onSubmit={save} onCancel={() => { setCreating(false); setEditing(null); }} />
-        </Modal>
-      )}
-      {deleting && (
-        <ConfirmModal
-          title="Mashg'ulotni o'chirish"
-          text={`${deleting.title} va unga bog'langan holat yozuvlari o'chiriladi. Davom etasizmi?`}
-          onCancel={() => setDeleting(null)}
-          onConfirm={remove}
-        />
-      )}
-    </Layout>
-  );
-}
 
 function TrainingDetailPage() {
   const { id } = useParams();
@@ -3127,7 +2331,7 @@ function StatisticsRankingCard({
 
 function StatisticsPage() {
   type StatisticsPeriod = 'week' | 'month' | 'season';
-  const [period, setPeriod] = useState<StatisticsPeriod>('month');
+  const [period, setPeriod] = useState<StatisticsPeriod>('season');
   const [summary, setSummary] = useState<StatisticsData | null>(null);
   const [trend, setTrend] = useState<AttendanceTrendPoint[]>([]);
   const [goals, setGoals] = useState<GoalAssistPoint[]>([]);
@@ -3810,17 +3014,14 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/kirish" element={<AuthPage />} />
-      <Route path="/" element={<ProtectedRoute><PremiumDashboardPage /></ProtectedRoute>} />
+      <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/futbolchilar" element={<ProtectedRoute><PlayersPage /></ProtectedRoute>} />
       <Route path="/futbolchilar/:id" element={<ProtectedRoute><RedesignedPlayerDetailPage /></ProtectedRoute>} />
       <Route path="/mashgulotlar" element={<ProtectedRoute><TrainingsListPage /></ProtectedRoute>} />
       <Route path="/mashgulotlar/:id" element={<ProtectedRoute><TrainingDetailPage /></ProtectedRoute>} />
       <Route path="/oyinlar" element={<ProtectedRoute><MatchesPage /></ProtectedRoute>} />
       <Route path="/oyinlar/:id" element={<ProtectedRoute><MatchDetailPage /></ProtectedRoute>} />
-      <Route path="/matches" element={<ProtectedRoute><MatchesPage /></ProtectedRoute>} />
-      <Route path="/matches/:id" element={<ProtectedRoute><MatchDetailPage /></ProtectedRoute>} />
       <Route path="/statistika" element={<ProtectedRoute><StatisticsPage /></ProtectedRoute>} />
-      <Route path="/statistics" element={<ProtectedRoute><StatisticsPage /></ProtectedRoute>} />
       <Route path="/hisobotlar" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
       <Route path="/sozlamalar" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,6 +1,8 @@
 from django.contrib import admin
 
 from .models import (
+    AIConversation,
+    AIMessage,
     CoachProfile,
     Match,
     Player,
@@ -89,3 +91,35 @@ class MatchAdmin(admin.ModelAdmin):
     list_display = ("home_team", "away_team", "match_date", "match_time", "status", "result_label")
     list_filter = ("status", "match_date")
     search_fields = ("home_team", "away_team", "stadium")
+
+
+class AIMessageInline(admin.TabularInline):
+    model = AIMessage
+    extra = 0
+    readonly_fields = ("created_at",)
+    fields = ("role", "content", "created_at")
+
+
+@admin.register(AIConversation)
+class AIConversationAdmin(admin.ModelAdmin):
+    list_display = ("title", "user", "is_active", "get_message_count", "created_at")
+    list_filter = ("is_active", "created_at", "user")
+    search_fields = ("title", "user__username")
+    readonly_fields = ("created_at", "updated_at")
+    inlines = [AIMessageInline]
+
+    def get_message_count(self, obj):
+        return obj.messages.count()
+    get_message_count.short_description = "Xabarlar soni"
+
+
+@admin.register(AIMessage)
+class AIMessageAdmin(admin.ModelAdmin):
+    list_display = ("conversation", "role", "content_preview", "created_at")
+    list_filter = ("role", "created_at")
+    search_fields = ("content", "conversation__title")
+    readonly_fields = ("created_at",)
+
+    def content_preview(self, obj):
+        return obj.content[:100] + "..." if len(obj.content) > 100 else obj.content
+    content_preview.short_description = "Xabar"

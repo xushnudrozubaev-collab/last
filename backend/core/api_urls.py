@@ -3,6 +3,9 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .api_views import (
+    AIChatAPIView,
+    AIConversationViewSet,
+    AIQuickReportAPIView,
     ChangePasswordAPIView,
     ChoicesAPIView,
     DashboardAPIView,
@@ -28,6 +31,7 @@ router.register("players", PlayerViewSet, basename="api-players")
 router.register("trainings", TrainingViewSet, basename="api-trainings")
 router.register("attendance", TrainingAttendanceViewSet, basename="api-attendance")
 router.register("matches", MatchViewSet, basename="api-matches")
+router.register("ai/conversations", AIConversationViewSet, basename="api-ai-conversations")
 
 urlpatterns = [
     path("auth/login/", UzbekTokenObtainPairView.as_view(), name="api-login"),
@@ -45,5 +49,7 @@ urlpatterns = [
     path("statistics/players/", StatisticsPlayersAPIView.as_view(), name="api-statistics-players"),
     path("reports/", ReportsAPIView.as_view(), name="api-reports"),
     path("reports/print/", ReportPrintAPIView.as_view(), name="api-reports-print"),
+    path("ai/chat/", AIChatAPIView.as_view(), name="api-ai-chat"),
+    path("ai/quick-report/", AIQuickReportAPIView.as_view(), name="api-ai-quick-report"),
     path("", include(router.urls)),
 ]

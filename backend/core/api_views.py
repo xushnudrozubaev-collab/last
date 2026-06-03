@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 from html import escape
 from io import BytesIO
 from pathlib import Path
+from typing import Dict
 
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import User
@@ -41,7 +42,8 @@ from .models import Match, Player, PlayerStatistic, PROJECT_CLUB_NAME, Training,
 
 
 def success(data=None, message="Amal muvaffaqiyatli bajarildi.", status_code=status.HTTP_200_OK):
-    return Response({"success": True, "message": message, "data": data or {}}, status=status_code)
+    # data=[] bo'lsa ham to'g'ri qaytarish ([] or {} muammosini oldini olish)
+    return Response({"success": True, "message": message, "data": data if data is not None else {}}, status=status_code)
 
 
 def project_club_matches(queryset):
@@ -1567,3 +1569,398 @@ class ReportPrintAPIView(APIView):
         download["Content-Disposition"] = f'attachment; filename="{filename}"'
         download["Content-Length"] = str(len(pdf))
         return download
+
+
+
+# ==================== AI MURABBIY YORDAMCHISI ====================
+
+from .models import AIConversation, AIMessage
+from .api_serializers import (
+    AIConversationSerializer,
+    AIConversationDetailSerializer,
+    AIMessageSerializer,
+    AIChatRequestSerializer,
+)
+from .services.ai_service import AIService
+
+
+class AIConversationViewSet(viewsets.ModelViewSet):
+    """AI suhbatlar ViewSet"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = AIConversationSerializer
+
+    def get_queryset(self):
+        # Faqat o'z suhbatlarini ko'radi
+        return AIConversation.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return AIConversationDetailSerializer
+        return AIConversationSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        conversation = serializer.save(user=request.user)
+        return success(
+            AIConversationDetailSerializer(conversation).data,
+            "Yangi suhbat yaratildi.",
+            status.HTTP_201_CREATED
+        )
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return success(serializer.data, "Suhbatlar yuklandi.")
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return success(serializer.data, "Suhbat yuklandi.")
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return success(serializer.data, "Suhbat yangilandi.")
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return success({}, "Suhbat o'chirildi.")
+
+
+class AIChatAPIView(APIView):
+    """AI bilan chat qilish endpoint"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """AI ga xabar yuborish va javob olish"""
+        serializer = AIChatRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user_message = serializer.validated_data["message"]
+        conversation_id = serializer.validated_data.get("conversation_id")
+
+        try:
+            # Suhbatni olish yoki yaratish
+            if conversation_id:
+                try:
+                    conversation = AIConversation.objects.get(
+                        id=conversation_id,
+                        user=request.user
+                    )
+                except AIConversation.DoesNotExist:
+                    return Response(
+                        {
+                            "success": False,
+                            "message": "Suhbat topilmadi.",
+                            "data": {}
+                        },
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            else:
+                # Yangi suhbat yaratish
+                title = user_message[:50] + "..." if len(user_message) > 50 else user_message
+                conversation = AIConversation.objects.create(
+                    user=request.user,
+                    title=title
+                )
+
+            # Foydalanuvchi xabarini saqlash
+            user_msg = AIMessage.objects.create(
+                conversation=conversation,
+                role=AIMessage.ROLE_USER,
+                content=user_message
+            )
+
+            # Tizim ma'lumotlarini yig'ish
+            context_data = self._gather_system_context(request.user)
+
+            # Suhbat tarixini olish
+            conversation_history = [
+                {"role": msg.role, "content": msg.content}
+                for msg in conversation.messages.order_by("created_at")
+            ]
+
+            # AI dan javob olish
+            try:
+                ai_service = AIService()
+                ai_response = ai_service.generate_response(
+                    user_message=user_message,
+                    context_data=context_data,
+                    conversation_history=conversation_history[:-1]  # Oxirgi xabarsiz
+                )
+            except ValueError as e:
+                return Response(
+                    {
+                        "success": False,
+                        "message": "GROQ_API_KEY sozlanmagan. Iltimos, .env faylga API kalitni kiriting.",
+                        "data": {}
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            except Exception as e:
+                error_msg = str(e).lower()
+                if "kvota" in error_msg or "quota" in error_msg or "429" in error_msg or "resource_exhausted" in error_msg:
+                    message = "AI so'rovlar limiti tugagan. Iltimos, bir necha daqiqadan keyin qayta urinib ko'ring."
+                else:
+                    message = f"AI xatolik: {str(e)}"
+                return Response(
+                    {
+                        "success": False,
+                        "message": message,
+                        "data": {}
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
+            # AI javobini saqlash
+            ai_msg = AIMessage.objects.create(
+                conversation=conversation,
+                role=AIMessage.ROLE_ASSISTANT,
+                content=ai_response
+            )
+
+            # Javobni qaytarish
+            return success(
+                {
+                    "conversation_id": conversation.id,
+                    "user_message": AIMessageSerializer(user_msg).data,
+                    "ai_message": AIMessageSerializer(ai_msg).data,
+                },
+                "Javob olindi."
+            )
+
+        except Exception as e:
+            return Response(
+                {
+                    "success": False,
+                    "message": f"Xatolik yuz berdi: {str(e)}",
+                    "data": {}
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def _gather_system_context(self, user) -> Dict:
+        """Tizimdan ma'lumotlarni yig'ish"""
+        context = {}
+
+        # Jamoa statistikalari
+        players = Player.objects.all()
+        trainings = Training.objects.all()
+        matches = project_club_matches(Match.objects.all())
+
+        team_stats = calculate_team_attendance_stats()
+        context["team_stats"] = {
+            "total_players": players.count(),
+            "active_players": players.count(),  # Hamma faol deb hisoblaymiz
+            "attendance_percent": team_stats.get("attendance_percent", 0),
+            "average_rating": team_stats.get("average_rating", 0),
+        }
+
+        # O'yinlar statistikasi
+        completed_matches = list(matches.filter(status=Match.STATUS_PLAYED))
+        match_record = project_club_record(completed_matches)
+        context["matches_stats"] = {
+            "total": matches.count(),
+            "wins": match_record["wins"],
+            "draws": match_record["draws"],
+            "losses": match_record["losses"],
+            "goals_for": match_record["goals_for"],
+            "goals_against": match_record["goals_against"],
+        }
+
+        # Mashg'ulotlar statistikasi
+        recent_trainings = trainings.order_by("-training_date")[:10]
+        avg_attendance = sum(t.attendance_percent for t in recent_trainings) / len(recent_trainings) if recent_trainings else 0
+
+        context["trainings_stats"] = {
+            "total": trainings.count(),
+            "average_attendance": round(avg_attendance, 2),
+            "recent_attendance": round(avg_attendance, 2),
+        }
+
+        # Top futbolchilar
+        all_player_stats = calculate_all_player_stats()
+        top_players_data = []
+        for player_stat in all_player_stats[:10]:
+            top_players_data.append({
+                "name": player_stat["player_name"],
+                "rating": player_stat["average_rating"],
+                "attendance": player_stat["attendance_percent"],
+            })
+        context["top_players"] = top_players_data
+
+        # Muammoli futbolchilar
+        problem_players = []
+        for player_stat in all_player_stats:
+            if player_stat["attendance_percent"] < 70:
+                problem_players.append({
+                    "name": player_stat["player_name"],
+                    "issue": f"Past davomat: {player_stat['attendance_percent']}%"
+                })
+            elif player_stat["average_rating"] < 5:
+                problem_players.append({
+                    "name": player_stat["player_name"],
+                    "issue": f"Past reyting: {player_stat['average_rating']}"
+                })
+        context["problem_players"] = problem_players[:5]
+
+        # Jarohatli futbolchilar
+        injured_records = TrainingAttendance.objects.filter(
+            Q(injury_status__in=[TrainingAttendance.INJURY_YES, TrainingAttendance.INJURY_RECOVERING])
+            | Q(physical_condition=TrainingAttendance.PHYSICAL_INJURED)
+        ).select_related("player").distinct()
+
+        injured_players = [
+            {"name": record.player.full_name}
+            for record in injured_records[:10]
+        ]
+        context["injured_players"] = injured_players
+
+        return context
+
+
+class AIQuickReportAPIView(APIView):
+    """AI tezkor hisobot generatsiya qilish"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """Tezkor hisobot olish"""
+        report_type = request.data.get("report_type", "team_analysis")
+
+        valid_types = [
+            "team_analysis",
+            "player_assessment",
+            "training_plan",
+            "strengths_weaknesses",
+            "next_match"
+        ]
+
+        if report_type not in valid_types:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Noto'g'ri hisobot turi.",
+                    "data": {}
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Tizim ma'lumotlarini yig'ish
+            context_data = self._gather_system_context(request.user)
+
+            # AI service orqali hisobot olish
+            try:
+                ai_service = AIService()
+                report_content = ai_service.generate_quick_report(
+                    report_type=report_type,
+                    context_data=context_data
+                )
+            except ValueError as e:
+                return Response(
+                    {
+                        "success": False,
+                        "message": "GROQ_API_KEY sozlanmagan. Iltimos, .env faylga API kalitni kiriting.",
+                        "data": {}
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            except Exception as e:
+                return Response(
+                    {
+                        "success": False,
+                        "message": f"AI xatolik: {str(e)}",
+                        "data": {}
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
+            return success(
+                {
+                    "report_type": report_type,
+                    "content": report_content,
+                },
+                "Hisobot tayyorlandi."
+            )
+
+        except Exception as e:
+            return Response(
+                {
+                    "success": False,
+                    "message": f"Xatolik: {str(e)}",
+                    "data": {}
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def _gather_system_context(self, user) -> Dict:
+        """Tizimdan ma'lumotlarni yig'ish (yuqoridagi bilan bir xil)"""
+        context = {}
+
+        players = Player.objects.all()
+        trainings = Training.objects.all()
+        matches = project_club_matches(Match.objects.all())
+
+        team_stats = calculate_team_attendance_stats()
+        context["team_stats"] = {
+            "total_players": players.count(),
+            "active_players": players.count(),
+            "attendance_percent": team_stats.get("attendance_percent", 0),
+            "average_rating": team_stats.get("average_rating", 0),
+        }
+
+        completed_matches = list(matches.filter(status=Match.STATUS_PLAYED))
+        match_record = project_club_record(completed_matches)
+        context["matches_stats"] = {
+            "total": matches.count(),
+            "wins": match_record["wins"],
+            "draws": match_record["draws"],
+            "losses": match_record["losses"],
+            "goals_for": match_record["goals_for"],
+            "goals_against": match_record["goals_against"],
+        }
+
+        recent_trainings = trainings.order_by("-training_date")[:10]
+        avg_attendance = sum(t.attendance_percent for t in recent_trainings) / len(recent_trainings) if recent_trainings else 0
+
+        context["trainings_stats"] = {
+            "total": trainings.count(),
+            "average_attendance": round(avg_attendance, 2),
+            "recent_attendance": round(avg_attendance, 2),
+        }
+
+        all_player_stats = calculate_all_player_stats()
+        top_players_data = []
+        for player_stat in all_player_stats[:10]:
+            top_players_data.append({
+                "name": player_stat["player_name"],
+                "rating": player_stat["average_rating"],
+                "attendance": player_stat["attendance_percent"],
+            })
+        context["top_players"] = top_players_data
+
+        problem_players = []
+        for player_stat in all_player_stats:
+            if player_stat["attendance_percent"] < 70:
+                problem_players.append({
+                    "name": player_stat["player_name"],
+                    "issue": f"Past davomat: {player_stat['attendance_percent']}%"
+                })
+        context["problem_players"] = problem_players[:5]
+
+        injured_records = TrainingAttendance.objects.filter(
+            Q(injury_status__in=[TrainingAttendance.INJURY_YES, TrainingAttendance.INJURY_RECOVERING])
+            | Q(physical_condition=TrainingAttendance.PHYSICAL_INJURED)
+        ).select_related("player").distinct()
+
+        injured_players = [{"name": record.player.full_name} for record in injured_records[:10]]
+        context["injured_players"] = injured_players
+
+        return context

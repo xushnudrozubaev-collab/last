@@ -3,7 +3,18 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .attendance import ACTIVE_STATUSES, calculate_player_attendance_stats, get_training_duration_minutes
-from .models import CoachProfile, Match, Player, PlayerStatistic, PROJECT_CLUB_NAME, Training, TrainingAttendance, UserProfile
+from .models import (
+    AIConversation,
+    AIMessage,
+    CoachProfile,
+    Match,
+    Player,
+    PlayerStatistic,
+    PROJECT_CLUB_NAME,
+    Training,
+    TrainingAttendance,
+    UserProfile,
+)
 
 
 class UzbekTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -424,3 +435,54 @@ class ReportRequestSerializer(serializers.Serializer):
         if start and end and start > end:
             raise serializers.ValidationError("Boshlanish sanasi tugash sanasidan keyin bo'lishi mumkin emas.")
         return attrs
+
+
+class AIMessageSerializer(serializers.ModelSerializer):
+    """AI xabar serializer"""
+    role_display = serializers.CharField(source="get_role_display", read_only=True)
+
+    class Meta:
+        model = AIMessage
+        fields = ("id", "role", "role_display", "content", "created_at")
+        read_only_fields = ("id", "created_at")
+
+
+class AIConversationSerializer(serializers.ModelSerializer):
+    """AI suhbat serializer"""
+    message_count = serializers.SerializerMethodField()
+    last_message = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AIConversation
+        fields = ("id", "title", "is_active", "message_count", "last_message", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
+
+    def get_message_count(self, obj):
+        return obj.messages.count()
+
+    def get_last_message(self, obj):
+        last_msg = obj.messages.order_by("-created_at").first()
+        if last_msg:
+            preview = last_msg.content[:100] + "..." if len(last_msg.content) > 100 else last_msg.content
+            return {
+                "content": preview,
+                "role": last_msg.role,
+                "created_at": last_msg.created_at,
+            }
+        return None
+
+
+class AIConversationDetailSerializer(serializers.ModelSerializer):
+    """AI suhbat batafsil serializer (xabarlar bilan)"""
+    messages = AIMessageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = AIConversation
+        fields = ("id", "title", "is_active", "messages", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
+
+
+class AIChatRequestSerializer(serializers.Serializer):
+    """AI chat so'rov serializer"""
+    message = serializers.CharField(required=True, min_length=1, max_length=5000)
+    conversation_id = serializers.IntegerField(required=False, allow_null=True)

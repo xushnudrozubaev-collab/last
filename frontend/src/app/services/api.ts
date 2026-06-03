@@ -625,3 +625,75 @@ export const settingsAPI = {
     );
   },
 };
+
+// AI Assistant Types
+export type AIMessage = {
+  id: number;
+  role: 'user' | 'assistant';
+  role_display: string;
+  content: string;
+  created_at: string;
+};
+
+export type AIConversation = {
+  id: number;
+  title: string;
+  is_active: boolean;
+  message_count: number;
+  last_message?: {
+    content: string;
+    role: string;
+    created_at: string;
+  } | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AIConversationDetail = {
+  id: number;
+  title: string;
+  is_active: boolean;
+  messages: AIMessage[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type AIChatResponse = {
+  conversation_id: number;
+  user_message: AIMessage;
+  ai_message: AIMessage;
+};
+
+export type AIQuickReportType = 'team_analysis' | 'player_assessment' | 'training_plan' | 'strengths_weaknesses' | 'next_match';
+
+// AI Assistant API
+export const aiAssistantAPI = {
+  async listConversations() {
+    return unwrap<AIConversation[]>(await api.get<ApiEnvelope<AIConversation[]>>('/ai/conversations/'));
+  },
+  async getConversation(id: number) {
+    return unwrap<AIConversationDetail>(await api.get<ApiEnvelope<AIConversationDetail>>(`/ai/conversations/${id}/`));
+  },
+  async createConversation(title: string) {
+    return unwrap<AIConversationDetail>(await api.post<ApiEnvelope<AIConversationDetail>>('/ai/conversations/', { title }));
+  },
+  async updateConversation(id: number, data: { title?: string; is_active?: boolean }) {
+    return unwrap<AIConversation>(await api.patch<ApiEnvelope<AIConversation>>(`/ai/conversations/${id}/`, data));
+  },
+  async deleteConversation(id: number) {
+    await api.delete(`/ai/conversations/${id}/`);
+  },
+  async chat(message: string, conversation_id?: number | null) {
+    return unwrap<AIChatResponse>(
+      await api.post<ApiEnvelope<AIChatResponse>>('/ai/chat/', {
+        message,
+        conversation_id: conversation_id || null,
+      })
+    );
+  },
+  async quickReport(report_type: AIQuickReportType) {
+    return unwrap<{ report: string; content: string; report_type: string }>(
+      await api.post<ApiEnvelope<{ report: string; content: string; report_type: string }>>('/ai/quick-report/', { report_type })
+    );
+  },
+};
