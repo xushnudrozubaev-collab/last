@@ -154,6 +154,12 @@ h3                 { font-size: 16px; font-weight: 500; }
 }
 
 .mini-metric {
+  position: relative;
+  width: 100%;
+  border: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
   min-height: 0 !important;
   padding: 16px !important;
   border-radius: 14px !important;
@@ -162,9 +168,14 @@ h3                 { font-size: 16px; font-weight: 500; }
   align-items: stretch !important;
   gap: 0 !important;
   overflow: hidden !important;
-  cursor: default;
+  cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease !important;
   box-shadow: 0 4px 20px rgba(0,0,0,0.22) !important;
+}
+
+.mini-metric:focus-visible {
+  outline: 3px solid rgba(255,255,255,0.75);
+  outline-offset: 3px;
 }
 
 .mini-metric::before {

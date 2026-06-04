@@ -610,7 +610,12 @@ function DashboardPage() {
 
         <div className="dashboard-metric-grid">
           {/* KARTA 1 — JAMOA */}
-          <article className="mini-metric metric-blue">
+          <button
+            type="button"
+            className="mini-metric metric-blue"
+            onClick={() => navigate('/futbolchilar')}
+            aria-label="Futbolchilar bo'limiga o'tish"
+          >
             <div className="dmc-header">
               <Users size={16} className="dmc-icon" />
               <span className="dmc-label">JAMOA</span>
@@ -630,10 +635,15 @@ function DashboardPage() {
                 <b>{periodStats?.goals ?? 0}</b>
               </div>
             </div>
-          </article>
+          </button>
 
           {/* KARTA 2 — MASHG'ULOTLAR */}
-          <article className="mini-metric metric-green">
+          <button
+            type="button"
+            className="mini-metric metric-green"
+            onClick={() => navigate('/mashgulotlar')}
+            aria-label="Mashg'ulotlar bo'limiga o'tish"
+          >
             <div className="dmc-header">
               <Dumbbell size={16} className="dmc-icon" />
               <span className="dmc-label">MASHG'ULOTLAR</span>
@@ -653,10 +663,15 @@ function DashboardPage() {
                 <b>{periodStats?.average_rating ?? data.team_average_rating}</b>
               </div>
             </div>
-          </article>
+          </button>
 
           {/* KARTA 3 — NATIJALAR */}
-          <article className="mini-metric metric-purple">
+          <button
+            type="button"
+            className="mini-metric metric-purple"
+            onClick={() => navigate('/oyinlar')}
+            aria-label="O'yinlar va natijalar bo'limiga o'tish"
+          >
             <div className="dmc-header">
               <Trophy size={16} className="dmc-icon" />
               <span className="dmc-label">NATIJALAR</span>
@@ -685,10 +700,15 @@ function DashboardPage() {
                 <b>{periodStats?.match_record.losses ?? 0}</b>
               </div>
             </div>
-          </article>
+          </button>
 
           {/* KARTA 4 — HOLAT */}
-          <article className="mini-metric metric-cyan">
+          <button
+            type="button"
+            className="mini-metric metric-cyan"
+            onClick={() => navigate('/statistika')}
+            aria-label="Statistika va holat bo'limiga o'tish"
+          >
             <div className="dmc-header">
               <ShieldAlert size={16} className="dmc-icon" />
               <span className="dmc-label">HOLAT</span>
@@ -714,7 +734,7 @@ function DashboardPage() {
                 <b>{shortDisplayName(data.top_recent_active_player?.player_name) || '—'}</b>
               </div>
             </div>
-          </article>
+          </button>
         </div>
       </section>
 
